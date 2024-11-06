@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import Box from "@mui/material/Box";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/DeleteOutlined";
 import {
-  GridRowsProp,
   DataGrid,
   GridColDef,
   GridActionsCellItem,
@@ -18,14 +16,14 @@ import BreadCrumberStyle from "../../components/breadcrumb/Index";
 import { IconMenus } from "../../components/icon";
 import { useNavigate } from "react-router-dom";
 import ModalStyle from "../../components/modal";
-import { IUserModel } from "../../models/userModel";
+import { ISpgModel } from "../../models/spgModel";
 
-export default function ListAdminView() {
-  const [tableData, setTableData] = useState<GridRowsProp[]>([]);
+export default function ListSpgView() {
+  const [tableData, setTableData] = useState<ISpgModel[]>([]);
   const { handleGetTableDataRequest, handleRemoveRequest } = useHttp();
   const navigation = useNavigate();
 
-  const [modalDeleteData, setModalDeleteData] = useState<IUserModel>();
+  const [modalDeleteData, setModalDeleteData] = useState<ISpgModel>();
   const [openModalDelete, setOpenModalDelete] = useState<boolean>(false);
 
   const [loading, setLoading] = useState(false);
@@ -36,17 +34,15 @@ export default function ListAdminView() {
   });
 
   const getTableData = async ({ search }: { search: string }) => {
-    console.log(paginationModel);
     try {
       setLoading(true);
       const result = await handleGetTableDataRequest({
-        path: "/users",
+        path: "/users", // Path API disesuaikan untuk mengambil data SPG
         page: paginationModel.page + 1,
         size: paginationModel.pageSize,
         filter: { search },
       });
 
-      console.log(result);
       if (result && result.data) {
         setTableData(result.data?.items);
         setRowCount(result.totalItems);
@@ -58,14 +54,14 @@ export default function ListAdminView() {
     }
   };
 
-  const handleDeleteAdmin = async (userId: string) => {
+  const handleDeleteSpg = async (userId: string) => {
     await handleRemoveRequest({
-      path: `/users/${userId}`,
+      path: `/users/${userId}`, // Pastikan endpoint disesuaikan
     });
     window.location.reload();
   };
 
-  const handleOpenModalDelete = (data: IUserModel) => {
+  const handleOpenModalDelete = (data: ISpgModel) => {
     setModalDeleteData(data);
     setOpenModalDelete(!openModalDelete);
   };
@@ -82,23 +78,26 @@ export default function ListAdminView() {
       editable: true,
     },
     {
-      field: "userRole",
-      renderHeader: () => <strong>{"Role"}</strong>,
-      flex: 1,
-      editable: true,
-      type: "singleSelect",
-      valueOptions: ["admin", "superAdmin"],
-    },
-    {
       field: "userEmail",
-      renderHeader: () => <strong>{"Email"}</strong>,
+      renderHeader: () => <strong>{"EMAIL"}</strong>,
       flex: 1,
       editable: true,
-      type: "singleSelect",
     },
     {
-      field: "created_at",
-      renderHeader: () => <strong>{"DIBUAT PADA"}</strong>,
+      field: "userDeviceId",
+      renderHeader: () => <strong>{"DEVICE ID"}</strong>,
+      flex: 1,
+      editable: true,
+    },
+    {
+      field: "userContact",
+      renderHeader: () => <strong>{"CONTACT"}</strong>,
+      flex: 1,
+      editable: true,
+    },
+    {
+      field: "createdAt",
+      renderHeader: () => <strong>{"CREATED AT"}</strong>,
       editable: true,
     },
     {
@@ -113,7 +112,7 @@ export default function ListAdminView() {
             icon={<EditIcon />}
             label="Edit"
             className="textPrimary"
-            onClick={() => navigation("/admins/edit/" + row.id)}
+            onClick={() => navigation("/spg/edit/" + row.spgId)}
             color="inherit"
           />,
           <GridActionsCellItem
@@ -139,15 +138,15 @@ export default function ListAdminView() {
       <GridToolbarContainer sx={{ justifyContent: "space-between", mb: 2 }}>
         <Stack direction="row" spacing={2}>
           <GridToolbarExport />
-          <Button
+          {/* <Button
             startIcon={<Add />}
             variant="outlined"
-            onClick={() => navigation("/admins/create")}
+            onClick={() => navigation("/spg/create")}
           >
-            Tambah Admin
-          </Button>
+            Tambah SPG
+          </Button> */}
         </Stack>
-        <Stack direction={"row"} spacing={1} alignItems={"center"}>
+        <Stack direction="row" spacing={1} alignItems="center">
           <TextField
             size="small"
             placeholder="search..."
@@ -155,7 +154,7 @@ export default function ListAdminView() {
             onChange={(e) => setSearch(e.target.value)}
           />
           <Button variant="outlined" onClick={() => getTableData({ search })}>
-            Search
+            Cari
           </Button>
         </Stack>
       </GridToolbarContainer>
@@ -167,39 +166,23 @@ export default function ListAdminView() {
       <BreadCrumberStyle
         navigation={[
           {
-            label: "Admin",
-            link: "/admins",
+            label: "SPG",
+            link: "/spg",
             icon: <IconMenus.admin fontSize="small" />,
           },
         ]}
       />
-      <Box
-        sx={{
-          width: "100%",
-          "& .actions": {
-            color: "text.secondary",
-          },
-          "& .textPrimary": {
-            color: "text.primary",
-          },
-        }}
-      >
+      <Box sx={{ width: "100%", "& .actions": { color: "text.secondary" } }}>
         <DataGrid
           rows={tableData}
           columns={columns}
-          getRowId={(row: any) => row.userId} 
+          getRowId={(row: any) => row.spgId} 
           editMode="row"
-          sx={{ padding: 2 }}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 10, page: 1 } },
-          }}
           autoHeight
           pageSizeOptions={[2, 5, 10, 25]}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
-          slots={{
-            toolbar: CustomToolbar,
-          }}
+          slots={{ toolbar: CustomToolbar }}
           rowCount={rowCount}
           paginationMode="server"
           loading={loading}
@@ -210,10 +193,10 @@ export default function ListAdminView() {
         openModal={openModalDelete}
         handleModalOnCancel={() => setOpenModalDelete(false)}
         message={
-          "Apakah anda yakin ingin menghapus " + modalDeleteData?.userName
+          "Apakah Anda yakin ingin menghapus " + modalDeleteData?.userName + "?"
         }
         handleModal={() => {
-          handleDeleteAdmin(modalDeleteData?.userId + "" );
+          if (modalDeleteData?.userId) handleDeleteSpg(modalDeleteData.userId);
           setOpenModalDelete(!openModalDelete);
         }}
       />

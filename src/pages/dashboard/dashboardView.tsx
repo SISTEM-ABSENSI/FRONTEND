@@ -49,9 +49,9 @@ const DashboardView = () => {
             onClick={() => navigation("/merchants")}
           >
             <Stack direction="row" spacing={2}>
-              <IconMenus.material fontSize="large" color={"inherit"} />
+              <IconMenus.spg fontSize="large" color={"inherit"} />
               <Stack justifyContent="center">
-                <Typography>Merchant</Typography>
+                <Typography>SPG</Typography>
                 <Typography fontSize="large" fontWeight="bold">
                   {statistic?.totalMerchant}
                 </Typography>

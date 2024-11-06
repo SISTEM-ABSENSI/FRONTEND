@@ -3,14 +3,16 @@ import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
-import AssignmentIndOutlinedIcon from "@mui/icons-material/AssignmentIndOutlined";
-import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import AccountBoxOutlinedIcon from '@mui/icons-material/AccountBoxOutlined';
 
 export const IconMenus = {
   dashboard: SpaceDashboardOutlinedIcon,
-  material: CategoryOutlinedIcon,
   notification: NotificationsActiveOutlinedIcon,
-  job: AssignmentIndOutlinedIcon,
+  store: StorefrontIcon,
+  spg: AccountBoxOutlinedIcon,
+  supplier: AddShoppingCartIcon,
   admin: AdminPanelSettingsOutlinedIcon,
   profile: PersonOutlineOutlinedIcon,
   settings: SettingsOutlinedIcon,

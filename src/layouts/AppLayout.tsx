@@ -118,12 +118,25 @@ export default function AppLayout() {
 
   const adminMenus = [
     { title: "Dashboard", link: "/", icon: <IconMenus.dashboard /> },
-    { title: "Merchants", link: "/merchants", icon: <IconMenus.material /> },
   ];
 
   const superAdminMenus = [
     { title: "Dashboard", link: "/", icon: <IconMenus.dashboard /> },
-    { title: "Merchants", link: "/merchants", icon: <IconMenus.material /> },
+    {
+      title: "Stores",
+      link: "/stores",
+      icon: <IconMenus.store />,
+    },
+    {
+      title: "Suppliers",
+      link: "/suppliers",
+      icon: <IconMenus.supplier />,
+    },
+    {
+      title: "Spg",
+      link: "/spg",
+      icon: <IconMenus.spg />,
+    },
     {
       title: "Admins",
       link: "/admins",
@@ -211,7 +224,7 @@ export default function AppLayout() {
             >
               <MenuIcon />
             </IconButton>
-            <img src={logo} height={30} />
+
             <Typography
               variant="h6"
               noWrap
@@ -223,11 +236,11 @@ export default function AppLayout() {
                 fontFamily: "monospace",
                 fontWeight: 700,
                 letterSpacing: ".3rem",
-                color: "inherit",
+                color: "dodgerblue",
                 textDecoration: "none",
               }}
             >
-              Bumblebee
+              FRESH ABSENSI
             </Typography>
 
             <Typography
@@ -246,7 +259,7 @@ export default function AppLayout() {
                 textDecoration: "none",
               }}
             >
-              BUMBLEBEE
+              FRESH ABSENSI
             </Typography>
             <Box
               sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}

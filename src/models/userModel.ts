@@ -1,11 +1,13 @@
 import { IRootModel } from "./rootModel";
 
 export interface IUserModel extends IRootModel {
-  userId: string;
-  userName: string;
-  userEmail: string;
-  userPassword: string;
-  userRole: "admin" | "superAdmin";
+  userId: string
+  userName: string
+  userEmail: string
+  userPassword: string
+  userRole: 'admin' | 'spg' | 'supplier'
+  userDeviceId: string
+  userContact: string
 }
 
 export interface IUserLoginRequestModel {

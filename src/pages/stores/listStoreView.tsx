@@ -18,14 +18,14 @@ import BreadCrumberStyle from "../../components/breadcrumb/Index";
 import { IconMenus } from "../../components/icon";
 import { useNavigate } from "react-router-dom";
 import ModalStyle from "../../components/modal";
-import { IUserModel } from "../../models/userModel";
+import { IStoreModel } from "../../models/storeModel";
 
-export default function ListAdminView() {
+export default function ListStoreView() {
   const [tableData, setTableData] = useState<GridRowsProp[]>([]);
   const { handleGetTableDataRequest, handleRemoveRequest } = useHttp();
   const navigation = useNavigate();
 
-  const [modalDeleteData, setModalDeleteData] = useState<IUserModel>();
+  const [modalDeleteData, setModalDeleteData] = useState<IStoreModel>();
   const [openModalDelete, setOpenModalDelete] = useState<boolean>(false);
 
   const [loading, setLoading] = useState(false);
@@ -40,7 +40,7 @@ export default function ListAdminView() {
     try {
       setLoading(true);
       const result = await handleGetTableDataRequest({
-        path: "/users",
+        path: "/stores",
         page: paginationModel.page + 1,
         size: paginationModel.pageSize,
         filter: { search },
@@ -58,14 +58,14 @@ export default function ListAdminView() {
     }
   };
 
-  const handleDeleteAdmin = async (userId: string) => {
+  const handleDeleteListItem = async (itemId: string) => {
     await handleRemoveRequest({
-      path: `/users/${userId}`,
+      path: `/stores/${itemId}`,
     });
     window.location.reload();
   };
 
-  const handleOpenModalDelete = (data: IUserModel) => {
+  const handleOpenModalDelete = (data: IStoreModel) => {
     setModalDeleteData(data);
     setOpenModalDelete(!openModalDelete);
   };
@@ -76,29 +76,26 @@ export default function ListAdminView() {
 
   const columns: GridColDef[] = [
     {
-      field: "userName",
+      field: "storeName",
       flex: 1,
       renderHeader: () => <strong>{"NAMA"}</strong>,
       editable: true,
     },
     {
-      field: "userRole",
-      renderHeader: () => <strong>{"Role"}</strong>,
+      field: "storeLatitude",
+      renderHeader: () => <strong>{"LATITUDE"}</strong>,
       flex: 1,
       editable: true,
-      type: "singleSelect",
-      valueOptions: ["admin", "superAdmin"],
     },
     {
-      field: "userEmail",
-      renderHeader: () => <strong>{"Email"}</strong>,
+      field: "storeLongitude",
+      renderHeader: () => <strong>{"LONGITUDE"}</strong>,
       flex: 1,
       editable: true,
-      type: "singleSelect",
     },
     {
-      field: "created_at",
-      renderHeader: () => <strong>{"DIBUAT PADA"}</strong>,
+      field: "createdAt",
+      renderHeader: () => <strong>{"CREATED AT"}</strong>,
       editable: true,
     },
     {
@@ -113,7 +110,7 @@ export default function ListAdminView() {
             icon={<EditIcon />}
             label="Edit"
             className="textPrimary"
-            onClick={() => navigation("/admins/edit/" + row.id)}
+            onClick={() => navigation("/stores/edit/" + row.id)}
             color="inherit"
           />,
           <GridActionsCellItem
@@ -142,9 +139,9 @@ export default function ListAdminView() {
           <Button
             startIcon={<Add />}
             variant="outlined"
-            onClick={() => navigation("/admins/create")}
+            onClick={() => navigation("/stores/create")}
           >
-            Tambah Admin
+            Create Store
           </Button>
         </Stack>
         <Stack direction={"row"} spacing={1} alignItems={"center"}>
@@ -167,9 +164,9 @@ export default function ListAdminView() {
       <BreadCrumberStyle
         navigation={[
           {
-            label: "Admin",
-            link: "/admins",
-            icon: <IconMenus.admin fontSize="small" />,
+            label: "Stores",
+            link: "/stores",
+            icon: <IconMenus.store fontSize="small" />,
           },
         ]}
       />
@@ -187,7 +184,7 @@ export default function ListAdminView() {
         <DataGrid
           rows={tableData}
           columns={columns}
-          getRowId={(row: any) => row.userId} 
+          getRowId={(row: any) => row.storeId} 
           editMode="row"
           sx={{ padding: 2 }}
           initialState={{
@@ -210,10 +207,10 @@ export default function ListAdminView() {
         openModal={openModalDelete}
         handleModalOnCancel={() => setOpenModalDelete(false)}
         message={
-          "Apakah anda yakin ingin menghapus " + modalDeleteData?.userName
+          "Apakah anda yakin ingin menghapus " + modalDeleteData?.storeName
         }
         handleModal={() => {
-          handleDeleteAdmin(modalDeleteData?.userId + "" );
+          handleDeleteListItem(modalDeleteData?.storeId + "");
           setOpenModalDelete(!openModalDelete);
         }}
       />

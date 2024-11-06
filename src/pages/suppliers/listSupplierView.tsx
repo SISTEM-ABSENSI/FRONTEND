@@ -18,14 +18,13 @@ import BreadCrumberStyle from "../../components/breadcrumb/Index";
 import { IconMenus } from "../../components/icon";
 import { useNavigate } from "react-router-dom";
 import ModalStyle from "../../components/modal";
-import { IUserModel } from "../../models/userModel";
+import { ISupplierModel } from "../../models/supplierModel";
 
-export default function ListAdminView() {
+export default function ListSupplierView() {
   const [tableData, setTableData] = useState<GridRowsProp[]>([]);
   const { handleGetTableDataRequest, handleRemoveRequest } = useHttp();
   const navigation = useNavigate();
-
-  const [modalDeleteData, setModalDeleteData] = useState<IUserModel>();
+  const [modalDeleteData, setModalDeleteData] = useState<ISupplierModel>();
   const [openModalDelete, setOpenModalDelete] = useState<boolean>(false);
 
   const [loading, setLoading] = useState(false);
@@ -36,17 +35,15 @@ export default function ListAdminView() {
   });
 
   const getTableData = async ({ search }: { search: string }) => {
-    console.log(paginationModel);
     try {
       setLoading(true);
       const result = await handleGetTableDataRequest({
-        path: "/users",
+        path: "/suppliers",
         page: paginationModel.page + 1,
         size: paginationModel.pageSize,
         filter: { search },
       });
 
-      console.log(result);
       if (result && result.data) {
         setTableData(result.data?.items);
         setRowCount(result.totalItems);
@@ -58,14 +55,14 @@ export default function ListAdminView() {
     }
   };
 
-  const handleDeleteAdmin = async (userId: string) => {
+  const handleDeleteSupplier = async (supplierId: string) => {
     await handleRemoveRequest({
-      path: `/users/${userId}`,
+      path: `/suppliers/${supplierId}`,
     });
     window.location.reload();
   };
 
-  const handleOpenModalDelete = (data: IUserModel) => {
+  const handleOpenModalDelete = (data: ISupplierModel) => {
     setModalDeleteData(data);
     setOpenModalDelete(!openModalDelete);
   };
@@ -76,29 +73,20 @@ export default function ListAdminView() {
 
   const columns: GridColDef[] = [
     {
-      field: "userName",
+      field: "supplierName",
       flex: 1,
       renderHeader: () => <strong>{"NAMA"}</strong>,
       editable: true,
     },
     {
-      field: "userRole",
-      renderHeader: () => <strong>{"Role"}</strong>,
+      field: "supplierContact",
+      renderHeader: () => <strong>{"KONTAK"}</strong>,
       flex: 1,
       editable: true,
-      type: "singleSelect",
-      valueOptions: ["admin", "superAdmin"],
     },
     {
-      field: "userEmail",
-      renderHeader: () => <strong>{"Email"}</strong>,
-      flex: 1,
-      editable: true,
-      type: "singleSelect",
-    },
-    {
-      field: "created_at",
-      renderHeader: () => <strong>{"DIBUAT PADA"}</strong>,
+      field: "createdAt",
+      renderHeader: () => <strong>{"CREATED AT"}</strong>,
       editable: true,
     },
     {
@@ -107,29 +95,21 @@ export default function ListAdminView() {
       renderHeader: () => <strong>{"ACTION"}</strong>,
       flex: 1,
       cellClassName: "actions",
-      getActions: ({ row }) => {
-        return [
-          <GridActionsCellItem
-            icon={<EditIcon />}
-            label="Edit"
-            className="textPrimary"
-            onClick={() => navigation("/admins/edit/" + row.id)}
-            color="inherit"
-          />,
-          <GridActionsCellItem
-            icon={<DeleteIcon color="error" />}
-            label="Delete"
-            onClick={() => handleOpenModalDelete(row)}
-            color="inherit"
-          />,
-          // <GridActionsCellItem
-          //   icon={<MoreOutlined color="info" />}
-          //   label="Detail"
-          //   onClick={() => navigation("/admins/detail/" + row.id)}
-          //   color="inherit"
-          // />,
-        ];
-      },
+      getActions: ({ row }) => [
+        <GridActionsCellItem
+          icon={<EditIcon />}
+          label="Edit"
+          className="textPrimary"
+          onClick={() => navigation("/suppliers/edit/" + row.id)}
+          color="inherit"
+        />,
+        <GridActionsCellItem
+          icon={<DeleteIcon color="error" />}
+          label="Delete"
+          onClick={() => handleOpenModalDelete(row)}
+          color="inherit"
+        />,
+      ],
     },
   ];
 
@@ -142,9 +122,9 @@ export default function ListAdminView() {
           <Button
             startIcon={<Add />}
             variant="outlined"
-            onClick={() => navigation("/admins/create")}
+            onClick={() => navigation("/suppliers/create")}
           >
-            Tambah Admin
+            Create Supplier
           </Button>
         </Stack>
         <Stack direction={"row"} spacing={1} alignItems={"center"}>
@@ -167,9 +147,9 @@ export default function ListAdminView() {
       <BreadCrumberStyle
         navigation={[
           {
-            label: "Admin",
-            link: "/admins",
-            icon: <IconMenus.admin fontSize="small" />,
+            label: "Supplier",
+            link: "/suppliers",
+            icon: <IconMenus.supplier fontSize="small" />,
           },
         ]}
       />
@@ -187,7 +167,7 @@ export default function ListAdminView() {
         <DataGrid
           rows={tableData}
           columns={columns}
-          getRowId={(row: any) => row.userId} 
+          getRowId={(row: any) => row.supplierId} 
           editMode="row"
           sx={{ padding: 2 }}
           initialState={{
@@ -210,10 +190,10 @@ export default function ListAdminView() {
         openModal={openModalDelete}
         handleModalOnCancel={() => setOpenModalDelete(false)}
         message={
-          "Apakah anda yakin ingin menghapus " + modalDeleteData?.userName
+          "Apakah anda yakin ingin menghapus " + modalDeleteData?.supplierName
         }
         handleModal={() => {
-          handleDeleteAdmin(modalDeleteData?.userId + "" );
+          handleDeleteSupplier(modalDeleteData?.supplierId + "");
           setOpenModalDelete(!openModalDelete);
         }}
       />
