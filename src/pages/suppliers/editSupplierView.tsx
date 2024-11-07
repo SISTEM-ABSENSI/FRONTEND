@@ -30,7 +30,7 @@ export default function EditSupplierView() {
       };
 
       await handleUpdateRequest({
-        path: "/suppliers/" + supplierId,
+        path: "/suppliers/",
         body: payload,
       });
 
@@ -42,7 +42,7 @@ export default function EditSupplierView() {
 
   const getDetailSupplier = async () => {
     const result = await handleGetRequest({
-      path: "/suppliers/" + supplierId,
+      path: "/suppliers/detail/" + supplierId,
     });
 
     if (result) {

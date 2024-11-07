@@ -21,13 +21,16 @@ export default function CreateStoreView() {
   const [storeName, setStoreName] = useState("");
   const [storeLongitude, setStoreLongitude] = useState("");
   const [storeLatitude, setStoreLatitude] = useState("");
+  const [storeAddress, setStoreAddress] = useState("");
+
 
   const handleSubmit = async () => {
     try {
       const payload: IStoreCreateRequestModel = {
         storeName,
         storeLongitude,
-        storeLatitude
+        storeLatitude,
+        storeAddress
       };
 
       await handlePostRequest({
@@ -88,6 +91,19 @@ export default function CreateStoreView() {
                 fullWidth
                 onChange={(e) => {
                   setStoreName(e.target.value);
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Alamat"
+                id="outlined-start-adornment"
+                sx={{ m: 1 }}
+                value={storeAddress}
+                fullWidth
+                minRows={4}
+                onChange={(e) => {
+                  setStoreAddress(e.target.value);
                 }}
               />
             </Grid>

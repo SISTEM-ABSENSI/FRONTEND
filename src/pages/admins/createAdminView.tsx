@@ -22,18 +22,20 @@ export default function CreateAdminView() {
   const { handlePostRequest } = useHttp();
   const navigate = useNavigate();
 
-  const [userEmail, setUserEmail] = useState("");
+  const [userContact, setUserContact] = useState("");
   const [userName, setUserName] = useState("");
   const [userPassword, setUserPassword] = useState("");
-  const [userRole, setUserRole] = useState<"ADMIN" | "USER" | string>("USER");
+  const [userRole, setUserRole] = useState<
+    "admin" | "superAdmin" | "supplier" | string
+  >("admin");
 
   const handleSubmit = async () => {
     try {
       const payload: IUserCreateRequestModel = {
-        user_name: userName,
-        email: userEmail,
-        password: userPassword,
-        role: userRole,
+        userName,
+        userContact,
+        userPassword,
+        userRole,
       };
 
       await handlePostRequest({
@@ -100,14 +102,13 @@ export default function CreateAdminView() {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="E-mail"
+                label="Kontak"
                 id="outlined-start-adornment"
                 sx={{ m: 1 }}
-                value={userEmail}
+                value={userContact}
                 fullWidth
-                type="email"
                 onChange={(e) => {
-                  setUserEmail(e.target.value);
+                  setUserContact(e.target.value);
                 }}
               />
             </Grid>
@@ -139,10 +140,11 @@ export default function CreateAdminView() {
                   sx={{ m: 1 }}
                   onChange={(e) => setUserRole(e.target.value)}
                 >
-                  <MenuItem selected value={"USER"}>
-                    User
+                  <MenuItem selected value={"admin"}>
+                    Admin
                   </MenuItem>
-                  <MenuItem value={"ADMIN"}>Admin</MenuItem>
+                  <MenuItem value={"superAdmin"}>Super Admin</MenuItem>
+                  <MenuItem value={"supplier"}>Supplier</MenuItem>
                 </Select>
               </FormControl>
             </Grid>

@@ -17,6 +17,8 @@ import ListSpgView from "../pages/spg/listSpgView";
 import ListSupplierView from "../pages/suppliers/listSupplierView";
 import CreateSupplierView from "../pages/suppliers/createSupplierView";
 import EditSupplierView from "../pages/suppliers/editSupplierView";
+import ListAttendanceView from "../pages/attendance/listAttendanceView";
+import LocationView from "../pages/location/locationView";
 
 const getProtectedRouters = (role: string) => {
   const mainRouters: { path: string; element: JSX.Element }[] = [];
@@ -54,8 +56,8 @@ const getProtectedRouters = (role: string) => {
       element: <EditProfileView />,
     },
 
-     // supplier router
-     {
+    // supplier router
+    {
       path: "/suppliers",
       element: <ListSupplierView />,
     },
@@ -73,6 +75,19 @@ const getProtectedRouters = (role: string) => {
       path: "/spg",
       element: <ListSpgView />,
     },
+
+    // attendance router
+    {
+      path: "/attendances",
+      element: <ListAttendanceView />,
+    },
+
+    // attendance router
+    {
+      path: "/location",
+      element: <LocationView />,
+    },
+
     // store router
     {
       path: "/stores",

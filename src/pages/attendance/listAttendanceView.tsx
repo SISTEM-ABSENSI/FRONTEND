@@ -12,7 +12,7 @@ import BreadCrumberStyle from "../../components/breadcrumb/Index";
 import { IconMenus } from "../../components/icon";
 import { ISpgModel } from "../../models/spgModel";
 
-export default function ListSpgView() {
+export default function ListAttendanceView() {
   const [tableData, setTableData] = useState<ISpgModel[]>([]);
   const { handleGetTableDataRequest } = useHttp();
 

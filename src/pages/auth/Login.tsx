@@ -29,7 +29,7 @@ export default function LoginView() {
         body: userPayload,
       });
 
-      console.log(result);
+      console.log(result.data);
 
       if (result && result?.data) {
         setToken(result.data?.token);

@@ -87,17 +87,15 @@ export default function ListAdminView() {
       flex: 1,
       editable: true,
       type: "singleSelect",
-      valueOptions: ["admin", "superAdmin"],
+      valueOptions: ["admin", "superAdmin", "supplier"],
     },
     {
-      field: "userEmail",
-      renderHeader: () => <strong>{"Email"}</strong>,
-      flex: 1,
+      field: "userContact",
+      renderHeader: () => <strong>{"KONTAK"}</strong>,
       editable: true,
-      type: "singleSelect",
     },
     {
-      field: "created_at",
+      field: "createdAt",
       renderHeader: () => <strong>{"DIBUAT PADA"}</strong>,
       editable: true,
     },
@@ -113,7 +111,7 @@ export default function ListAdminView() {
             icon={<EditIcon />}
             label="Edit"
             className="textPrimary"
-            onClick={() => navigation("/admins/edit/" + row.id)}
+            onClick={() => navigation("/admins/edit/" + row.userId)}
             color="inherit"
           />,
           <GridActionsCellItem

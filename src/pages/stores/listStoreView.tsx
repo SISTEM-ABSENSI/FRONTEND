@@ -82,6 +82,17 @@ export default function ListStoreView() {
       editable: true,
     },
     {
+      field: "storeName",
+      flex: 1,
+      renderHeader: () => <strong>{"NAMA"}</strong>,
+      editable: true,
+    }, {
+      field: "storeAddress",
+      flex: 1,
+      renderHeader: () => <strong>{"ALAMAT"}</strong>,
+      editable: true,
+    },
+    {
       field: "storeLatitude",
       renderHeader: () => <strong>{"LATITUDE"}</strong>,
       flex: 1,
@@ -105,12 +116,13 @@ export default function ListStoreView() {
       flex: 1,
       cellClassName: "actions",
       getActions: ({ row }) => {
+        console.log(row)
         return [
           <GridActionsCellItem
             icon={<EditIcon />}
             label="Edit"
             className="textPrimary"
-            onClick={() => navigation("/stores/edit/" + row.id)}
+            onClick={() => navigation("/stores/edit/" + row?.storeId)}
             color="inherit"
           />,
           <GridActionsCellItem

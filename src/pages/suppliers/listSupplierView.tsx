@@ -100,7 +100,7 @@ export default function ListSupplierView() {
           icon={<EditIcon />}
           label="Edit"
           className="textPrimary"
-          onClick={() => navigation("/suppliers/edit/" + row.id)}
+          onClick={() => navigation("/suppliers/edit/" + row.supplierId)}
           color="inherit"
         />,
         <GridActionsCellItem

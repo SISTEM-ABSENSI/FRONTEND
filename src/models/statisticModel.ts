@@ -1,4 +1,6 @@
 export interface IStatisticModel {
-  totalMerchant: number;
-  totalAdmin: number;
+  totalUsers: number;
+  totalSpg: number;
+  totalStores: number;
+  totalSuppliers: number;
 }

@@ -12,13 +12,15 @@ const DashboardView = () => {
   const navigation = useNavigate();
 
   const [statistic, setStatistic] = useState<IStatisticModel>({
-    totalMerchant: 0,
-    totalAdmin: 0,
+    totalUsers: 0,
+    totalSpg: 0,
+    totalStores: 0,
+    totalSuppliers: 0,
   });
 
   const handleGetStatistic = async () => {
     const result = await handleGetRequest({
-      path: "/statistic/total",
+      path: "/statistic",
     });
 
     if (result?.data) {
@@ -46,14 +48,14 @@ const DashboardView = () => {
         <Grid item md={3} sm={4} xs={12}>
           <Card
             sx={{ p: 3, minWidth: 200, cursor: "pointer" }}
-            onClick={() => navigation("/merchants")}
+            onClick={() => navigation("/spg")}
           >
             <Stack direction="row" spacing={2}>
               <IconMenus.spg fontSize="large" color={"inherit"} />
               <Stack justifyContent="center">
                 <Typography>SPG</Typography>
                 <Typography fontSize="large" fontWeight="bold">
-                  {statistic?.totalMerchant}
+                  {statistic?.totalSpg}
                 </Typography>
               </Stack>
             </Stack>
@@ -67,9 +69,43 @@ const DashboardView = () => {
             <Stack direction="row" spacing={2}>
               <IconMenus.admin fontSize="large" color={"inherit"} />
               <Stack justifyContent="center">
-                <Typography>Admin</Typography>
+                <Typography>User</Typography>
                 <Typography fontSize="large" fontWeight="bold">
-                  {statistic?.totalAdmin}
+                  {statistic?.totalUsers}
+                </Typography>
+              </Stack>
+            </Stack>
+          </Card>
+        </Grid>
+
+        <Grid item md={3} sm={4} xs={12}>
+          <Card
+            sx={{ p: 3, minWidth: 200, cursor: "pointer" }}
+            onClick={() => navigation("/stores")}
+          >
+            <Stack direction="row" spacing={2}>
+              <IconMenus.store fontSize="large" color={"inherit"} />
+              <Stack justifyContent="center">
+                <Typography>Stores</Typography>
+                <Typography fontSize="large" fontWeight="bold">
+                  {statistic?.totalStores}
+                </Typography>
+              </Stack>
+            </Stack>
+          </Card>
+        </Grid>
+
+        <Grid item md={3} sm={4} xs={12}>
+          <Card
+            sx={{ p: 3, minWidth: 200, cursor: "pointer" }}
+            onClick={() => navigation("/suppliers")}
+          >
+            <Stack direction="row" spacing={2}>
+              <IconMenus.admin fontSize="large" color={"inherit"} />
+              <Stack justifyContent="center">
+                <Typography>Supplier</Typography>
+                <Typography fontSize="large" fontWeight="bold">
+                  {statistic?.totalSuppliers}
                 </Typography>
               </Stack>
             </Stack>

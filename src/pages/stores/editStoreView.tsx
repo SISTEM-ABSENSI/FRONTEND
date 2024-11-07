@@ -16,24 +16,27 @@ import BreadCrumberStyle from "../../components/breadcrumb/Index";
 
 export default function EditStoreView() {
   const { handleUpdateRequest, handleGetRequest } = useHttp();
-  const { adminId } = useParams();
+  const { storeId } = useParams();
 
   // State untuk menyimpan data toko
   const [storeName, setStoreName] = useState("");
   const [storeLongitude, setStoreLongitude] = useState("");
   const [storeLatitude, setStoreLatitude] = useState("");
+  const [storeAddress, setStoreAddress] = useState("");
+
 
   const handleSubmit = async () => {
     try {
       const payload: IStoreUpdateRequestModel = {
-        storeId: adminId!,
+        storeId: storeId!,
         storeName,
         storeLongitude,
         storeLatitude,
+        storeAddress
       };
 
       await handleUpdateRequest({
-        path: "/stores/" + adminId,
+        path: "/stores/",
         body: payload,
       });
 
@@ -45,13 +48,14 @@ export default function EditStoreView() {
 
   const getDetailStore = async () => {
     const result = await handleGetRequest({
-      path: "/stores/" + adminId,
+      path: "/stores/detail/" + storeId,
     });
 
     if (result) {
       setStoreName(result?.data?.storeName);
       setStoreLongitude(result?.data?.storeLongitude);
       setStoreLatitude(result?.data?.storeLatitude);
+      setStoreAddress(result?.data?.storeAddress);
     }
   };
 
@@ -70,7 +74,7 @@ export default function EditStoreView() {
           },
           {
             label: "Edit",
-            link: "/stores/edit/" + adminId,
+            link: "/stores/edit/" + storeId,
           },
         ]}
       />
@@ -105,6 +109,17 @@ export default function EditStoreView() {
                 fullWidth
                 onChange={(e) => {
                   setStoreName(e.target.value);
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Alamat"
+                value={storeAddress}
+                type="text"
+                fullWidth
+                onChange={(e) => {
+                  setStoreAddress(e.target.value);
                 }}
               />
             </Grid>

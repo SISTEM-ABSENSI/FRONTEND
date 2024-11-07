@@ -29,7 +29,7 @@ export default function CreateSupplierView() {
       };
 
       await handlePostRequest({
-        path: "/suppliers/create",
+        path: "/suppliers",
         body: payload,
       });
 

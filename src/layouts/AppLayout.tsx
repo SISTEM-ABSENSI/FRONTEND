@@ -118,10 +118,6 @@ export default function AppLayout() {
 
   const adminMenus = [
     { title: "Dashboard", link: "/", icon: <IconMenus.dashboard /> },
-  ];
-
-  const superAdminMenus = [
-    { title: "Dashboard", link: "/", icon: <IconMenus.dashboard /> },
     {
       title: "Stores",
       link: "/stores",
@@ -136,6 +132,40 @@ export default function AppLayout() {
       title: "Spg",
       link: "/spg",
       icon: <IconMenus.spg />,
+    },
+    {
+      title: "Admins",
+      link: "/admins",
+      icon: <IconMenus.admin />,
+    },
+  ];
+
+  const superAdminMenus = [
+    { title: "Dashboard", link: "/", icon: <IconMenus.dashboard /> },
+    {
+      title: "Attendance",
+      link: "/attendances",
+      icon: <IconMenus.attendance />,
+    },
+    {
+      title: "Location",
+      link: "/location",
+      icon: <IconMenus.location />,
+    },
+    {
+      title: "Stores",
+      link: "/stores",
+      icon: <IconMenus.store />,
+    },
+    {
+      title: "Spg",
+      link: "/spg",
+      icon: <IconMenus.spg />,
+    },
+    {
+      title: "Suppliers",
+      link: "/suppliers",
+      icon: <IconMenus.supplier />,
     },
     {
       title: "Admins",

@@ -23,7 +23,17 @@ export interface IUserTokenModel {
 
 export interface IUserCreateRequestModel {
   userName: string;
-  userEmail: string;
+  userContact: string;
   userPassword: string;
-  userRole: "admin" | "superAdmin";
+  userRole: "admin" | "superAdmin" | "supplier" | string;
+}
+
+export interface IUserUpdateRequestModel {
+  userId: string
+  userName?: string
+  userEmail?: string
+  userPassword?: string
+  userRole?: 'admin' | 'superAdmin' | 'spg' | 'supplier' | string
+  userDeviceId?: string
+  userContact?: string
 }
