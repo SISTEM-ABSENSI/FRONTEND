@@ -73,14 +73,14 @@ export default function ListSupplierView() {
 
   const columns: GridColDef[] = [
     {
-      field: "supplierName",
+      field: "userName",
       flex: 1,
       renderHeader: () => <strong>{"NAMA"}</strong>,
       editable: true,
     },
     {
-      field: "supplierContact",
-      renderHeader: () => <strong>{"KONTAK"}</strong>,
+      field: "userContact",
+      renderHeader: () => <strong>{"CONTACT"}</strong>,
       flex: 1,
       editable: true,
     },
@@ -167,7 +167,7 @@ export default function ListSupplierView() {
         <DataGrid
           rows={tableData}
           columns={columns}
-          getRowId={(row: any) => row.supplierId} 
+          getRowId={(row: any) => row.userId} 
           editMode="row"
           sx={{ padding: 2 }}
           initialState={{

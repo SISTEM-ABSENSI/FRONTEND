@@ -1,44 +1,31 @@
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
-import 'leaflet/dist/leaflet.css'
-import { useEffect, useState } from 'react'
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import { useEffect, useState } from "react";
+import { IStoreModel } from "../../models/storeModel";
+import { useHttp } from "../../hooks/http";
 
 export default function LocationView() {
-  // Fake data for GPS locations
-  const fakeData: any[] = [
-    {
-      gpsLocationId: '1',
-      gpsLocationLatitude: '-6.1754',
-      gpsLocationLongitude: '106.8272',
-      user: { userName: 'User 1' }
-    },
-    {
-      gpsLocationId: '2',
-      gpsLocationLatitude: '-6.2000',
-      gpsLocationLongitude: '106.8500',
-      user: { userName: 'User 2' }
-    },
-    {
-      gpsLocationId: '3',
-      gpsLocationLatitude: '-6.1500',
-      gpsLocationLongitude: '106.7800',
-      user: { userName: 'User 3' }
+  const { handleGetRequest } = useHttp();
+
+  const [coordinates, setCoordintes] = useState<IStoreModel[]>([]);
+
+  const handleGetStores = async () => {
+    try {
+      const result = await handleGetRequest({
+        path: "/stores",
+      });
+      console.log(result);
+      if (result && result?.data) {
+        setCoordintes(result?.data?.items);
+      }
+    } catch (error) {
+      console.log(error);
     }
-  ]
-
-  const [coordinates, setCoordintes] = useState<any[]>(fakeData)
+  };
 
   useEffect(() => {
-    // Normally here you would call API, but now we're using fakeData
-    setCoordintes(fakeData)
-  }, [])
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Normally here you would fetch new data, but now we're simulating with static data
-      setCoordintes(fakeData)
-    }, 10000)
-    return () => clearInterval(interval)
-  }, [])
+    handleGetStores();
+  }, []);
 
   return (
     <MapContainer
@@ -46,28 +33,28 @@ export default function LocationView() {
       zoom={5}
       maxZoom={20}
       style={{
-        height: '75vh'
+        height: "75vh",
       }}
     >
       <TileLayer
-        url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
       />
 
       {coordinates.map((item) => {
         return (
           <Marker
-            key={item.gpsLocationId}
-            position={[+item.gpsLocationLatitude, +item.gpsLocationLongitude]}
+            key={item.storeId}
+            position={[+item.storeLatitude, +item.storeLongitude]}
           >
             <Popup>
-              <h1>{item?.user?.userName}</h1>
-              <small>Latitude: {item.gpsLocationLatitude}</small>
-              <small>Longitude: {item.gpsLocationLongitude}</small>
+              <h1>{item?.storeName}</h1>
+              <small>Latitude: {item.storeLatitude}</small>
+              <small>Longitude: {item.storeLongitude}</small>
             </Popup>
           </Marker>
-        )
+        );
       })}
     </MapContainer>
-  )
+  );
 }

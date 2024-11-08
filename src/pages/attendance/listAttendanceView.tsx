@@ -33,8 +33,6 @@ export default function ListAttendanceView() {
         filter: { search },
       });
 
-      console.log("___________attendance____________")
-      console.log(result)
       if (result && result.data) {
         setTableData(result.data?.items);
         setRowCount(result.totalItems);
@@ -55,23 +53,39 @@ export default function ListAttendanceView() {
       field: "userName",
       flex: 1,
       renderHeader: () => <strong>{"NAMA"}</strong>,
+      valueGetter: (params) => params.row.user?.userName || "", // Access nested user.name
       editable: true,
     },
     {
-      field: "userDeviceId",
-      renderHeader: () => <strong>{"DEVICE ID"}</strong>,
+      field: "storeName",
+      flex: 1,
+      renderHeader: () => <strong>{"Store"}</strong>,
+      valueGetter: (params) => params.row.store?.storeName || "", // Access nested user.name
+      editable: true,
+    },
+    {
+      field: "storeAddress",
+      flex: 1,
+      renderHeader: () => <strong>{"Address"}</strong>,
+      valueGetter: (params) => params.row.store?.storeAddress || "", // Access nested user.name
+      editable: true,
+    },
+    {
+      field: "scheduleStatus",
+      renderHeader: () => <strong>{"STATUS"}</strong>,
       flex: 1,
       editable: true,
     },
     {
-      field: "userContact",
-      renderHeader: () => <strong>{"CONTACT"}</strong>,
+      field: "scheduleStartDate",
+      renderHeader: () => <strong>{"START"}</strong>,
       flex: 1,
       editable: true,
     },
     {
-      field: "createdAt",
-      renderHeader: () => <strong>{"CREATED AT"}</strong>,
+      field: "scheduleEndDate",
+      renderHeader: () => <strong>{"END"}</strong>,
+      flex: 1,
       editable: true,
     },
   ];
@@ -103,9 +117,9 @@ export default function ListAttendanceView() {
       <BreadCrumberStyle
         navigation={[
           {
-            label: "SPG",
-            link: "/spg",
-            icon: <IconMenus.admin fontSize="small" />,
+            label: "Attendance",
+            link: "/attendances",
+            icon: <IconMenus.attendance fontSize="small" />,
           },
         ]}
       />
@@ -113,7 +127,7 @@ export default function ListAttendanceView() {
         <DataGrid
           rows={tableData}
           columns={columns}
-          getRowId={(row: any) => row.userId}
+          getRowId={(row: any) => row.scheduleId}
           editMode="row"
           autoHeight
           pageSizeOptions={[2, 5, 10, 25]}
