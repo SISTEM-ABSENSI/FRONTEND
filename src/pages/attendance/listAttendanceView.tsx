@@ -27,12 +27,14 @@ export default function ListAttendanceView() {
     try {
       setLoading(true);
       const result = await handleGetTableDataRequest({
-        path: "/spg", // Path API disesuaikan untuk mengambil data SPG
+        path: "/attendances", // Path API disesuaikan untuk mengambil data SPG
         page: paginationModel.page + 1,
         size: paginationModel.pageSize,
         filter: { search },
       });
 
+      console.log("___________attendance____________")
+      console.log(result)
       if (result && result.data) {
         setTableData(result.data?.items);
         setRowCount(result.totalItems);

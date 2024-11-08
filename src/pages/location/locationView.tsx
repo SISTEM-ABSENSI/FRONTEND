@@ -1,128 +1,73 @@
-import Box from "@mui/material/Box";
-import {
-  DataGrid,
-  GridColDef,
-  GridToolbarContainer,
-  GridToolbarExport,
-} from "@mui/x-data-grid";
-import { useEffect, useState } from "react";
-import { useHttp } from "../../hooks/http";
-import { Button, Stack, TextField } from "@mui/material";
-import BreadCrumberStyle from "../../components/breadcrumb/Index";
-import { IconMenus } from "../../components/icon";
-import { ISpgModel } from "../../models/spgModel";
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import { useEffect, useState } from 'react'
 
 export default function LocationView() {
-  const [tableData, setTableData] = useState<ISpgModel[]>([]);
-  const { handleGetTableDataRequest } = useHttp();
-
-  const [loading, setLoading] = useState(false);
-  const [rowCount, setRowCount] = useState(0);
-  const [paginationModel, setPaginationModel] = useState({
-    pageSize: 10,
-    page: 1,
-  });
-
-  const getTableData = async ({ search }: { search: string }) => {
-    try {
-      setLoading(true);
-      const result = await handleGetTableDataRequest({
-        path: "/spg", // Path API disesuaikan untuk mengambil data SPG
-        page: paginationModel.page + 1,
-        size: paginationModel.pageSize,
-        filter: { search },
-      });
-
-      if (result && result.data) {
-        setTableData(result.data?.items);
-        setRowCount(result.totalItems);
-      }
-    } catch (error: any) {
-      console.log(error);
-    } finally {
-      setLoading(false);
+  // Fake data for GPS locations
+  const fakeData: any[] = [
+    {
+      gpsLocationId: '1',
+      gpsLocationLatitude: '-6.1754',
+      gpsLocationLongitude: '106.8272',
+      user: { userName: 'User 1' }
+    },
+    {
+      gpsLocationId: '2',
+      gpsLocationLatitude: '-6.2000',
+      gpsLocationLongitude: '106.8500',
+      user: { userName: 'User 2' }
+    },
+    {
+      gpsLocationId: '3',
+      gpsLocationLatitude: '-6.1500',
+      gpsLocationLongitude: '106.7800',
+      user: { userName: 'User 3' }
     }
-  };
+  ]
+
+  const [coordinates, setCoordintes] = useState<any[]>(fakeData)
 
   useEffect(() => {
-    getTableData({ search: "" });
-  }, [paginationModel]);
+    // Normally here you would call API, but now we're using fakeData
+    setCoordintes(fakeData)
+  }, [])
 
-  const columns: GridColDef[] = [
-    {
-      field: "userName",
-      flex: 1,
-      renderHeader: () => <strong>{"NAMA"}</strong>,
-      editable: true,
-    },
-    {
-      field: "userDeviceId",
-      renderHeader: () => <strong>{"DEVICE ID"}</strong>,
-      flex: 1,
-      editable: true,
-    },
-    {
-      field: "userContact",
-      renderHeader: () => <strong>{"CONTACT"}</strong>,
-      flex: 1,
-      editable: true,
-    },
-    {
-      field: "createdAt",
-      renderHeader: () => <strong>{"CREATED AT"}</strong>,
-      editable: true,
-    },
-  ];
-
-  function CustomToolbar() {
-    const [search, setSearch] = useState<string>("");
-    return (
-      <GridToolbarContainer sx={{ justifyContent: "space-between", mb: 2 }}>
-        <Stack direction="row" spacing={2}>
-          <GridToolbarExport />
-        </Stack>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <TextField
-            size="small"
-            placeholder="search..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <Button variant="outlined" onClick={() => getTableData({ search })}>
-            Cari
-          </Button>
-        </Stack>
-      </GridToolbarContainer>
-    );
-  }
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Normally here you would fetch new data, but now we're simulating with static data
+      setCoordintes(fakeData)
+    }, 10000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
-    <Box>
-      <BreadCrumberStyle
-        navigation={[
-          {
-            label: "SPG",
-            link: "/spg",
-            icon: <IconMenus.admin fontSize="small" />,
-          },
-        ]}
+    <MapContainer
+      center={[-6.1754, 106.8272]}
+      zoom={5}
+      maxZoom={20}
+      style={{
+        height: '75vh'
+      }}
+    >
+      <TileLayer
+        url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
       />
-      <Box sx={{ width: "100%", "& .actions": { color: "text.secondary" } }}>
-        <DataGrid
-          rows={tableData}
-          columns={columns}
-          getRowId={(row: any) => row.userId}
-          editMode="row"
-          autoHeight
-          pageSizeOptions={[2, 5, 10, 25]}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          slots={{ toolbar: CustomToolbar }}
-          rowCount={rowCount}
-          paginationMode="server"
-          loading={loading}
-        />
-      </Box>
-    </Box>
-  );
+
+      {coordinates.map((item) => {
+        return (
+          <Marker
+            key={item.gpsLocationId}
+            position={[+item.gpsLocationLatitude, +item.gpsLocationLongitude]}
+          >
+            <Popup>
+              <h1>{item?.user?.userName}</h1>
+              <small>Latitude: {item.gpsLocationLatitude}</small>
+              <small>Longitude: {item.gpsLocationLongitude}</small>
+            </Popup>
+          </Marker>
+        )
+      })}
+    </MapContainer>
+  )
 }
