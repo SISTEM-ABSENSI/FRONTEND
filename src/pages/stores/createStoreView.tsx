@@ -6,44 +6,39 @@ import {
   Box,
   TextField,
   Stack,
-  Select,
-  MenuItem,
-  InputLabel,
-  Grid,
-  FormControl,
+  Grid
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useHttp } from "../../hooks/http";
 import BreadCrumberStyle from "../../components/breadcrumb/Index";
 import { IconMenus } from "../../components/icon";
-import { IUserCreateRequestModel } from "../../models/userModel";
+import { IStoreCreateRequestModel } from "../../models/storeModel";
 
-export default function CreateAdminView() {
+export default function CreateStoreView() {
   const { handlePostRequest } = useHttp();
   const navigate = useNavigate();
 
-  const [userContact, setUserContact] = useState("");
-  const [userName, setUserName] = useState("");
-  const [userPassword, setUserPassword] = useState("");
-  const [userRole, setUserRole] = useState<
-    "admin" | "superAdmin" | "supplier" | string
-  >("admin");
+  const [storeName, setStoreName] = useState("");
+  const [storeLongitude, setStoreLongitude] = useState("");
+  const [storeLatitude, setStoreLatitude] = useState("");
+  const [storeAddress, setStoreAddress] = useState("");
+
 
   const handleSubmit = async () => {
     try {
-      const payload: IUserCreateRequestModel = {
-        userName,
-        userContact,
-        userPassword,
-        userRole,
+      const payload: IStoreCreateRequestModel = {
+        storeName,
+        storeLongitude,
+        storeLatitude,
+        storeAddress
       };
 
       await handlePostRequest({
-        path: "/users/register",
+        path: "/stores",
         body: payload,
       });
 
-      navigate("/admins");
+      navigate("/stores");
     } catch (error: unknown) {
       console.log(error);
     }
@@ -54,13 +49,13 @@ export default function CreateAdminView() {
       <BreadCrumberStyle
         navigation={[
           {
-            label: "Admin",
-            link: "/admins",
-            icon: <IconMenus.admin fontSize="small" />,
+            label: "Store",
+            link: "/stores",
+            icon: <IconMenus.store fontSize="small" />,
           },
           {
             label: "Create",
-            link: "/admins/create",
+            link: "/stores/create",
           },
         ]}
       />
@@ -76,7 +71,7 @@ export default function CreateAdminView() {
           color="primary"
           fontWeight={"bold"}
         >
-          Tambah Admin
+          Create Store
         </Typography>
         <Box
           component="form"
@@ -89,64 +84,54 @@ export default function CreateAdminView() {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Nama"
+                label="Name"
                 id="outlined-start-adornment"
                 sx={{ m: 1 }}
-                value={userName}
+                value={storeName}
+                fullWidth
+                onChange={(e) => {
+                  setStoreName(e.target.value);
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Alamat"
+                id="outlined-start-adornment"
+                sx={{ m: 1 }}
+                value={storeAddress}
+                fullWidth
+                minRows={4}
+                onChange={(e) => {
+                  setStoreAddress(e.target.value);
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Longitude"
+                id="outlined-start-adornment"
+                sx={{ m: 1 }}
+                value={storeLongitude}
                 type="text"
                 fullWidth
                 onChange={(e) => {
-                  setUserName(e.target.value);
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Kontak"
-                id="outlined-start-adornment"
-                sx={{ m: 1 }}
-                value={userContact}
-                fullWidth
-                onChange={(e) => {
-                  setUserContact(e.target.value);
+                  setStoreLongitude(e.target.value);
                 }}
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Password"
+                label="Latitude"
                 id="outlined-start-adornment"
                 sx={{ m: 1 }}
-                value={userPassword}
-                type="password"
+                value={storeLatitude}
                 fullWidth
                 onChange={(e) => {
-                  setUserPassword(e.target.value);
+                  setStoreLatitude(e.target.value);
                 }}
               />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel id="demo-multiple-name-label">
-                  Pilih Role
-                </InputLabel>
-                <Select
-                  labelId="demo-select-small-label"
-                  id="demo-select-small"
-                  value={userRole}
-                  fullWidth
-                  sx={{ m: 1 }}
-                  onChange={(e) => setUserRole(e.target.value)}
-                >
-                  <MenuItem selected value={"admin"}>
-                    Admin
-                  </MenuItem>
-                  <MenuItem value={"superAdmin"}>Super Admin</MenuItem>
-                  <MenuItem value={"supplier"}>Supplier</MenuItem>
-                </Select>
-              </FormControl>
             </Grid>
           </Grid>
           <Stack direction={"row"} justifyContent="flex-end">
