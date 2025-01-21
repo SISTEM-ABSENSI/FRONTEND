@@ -42,7 +42,7 @@ export class ServiceHttp {
     const headers = getHeaders();
     try {
       const result = await axios({ ...config, headers });
-      return result.data;
+      return result?.data?.data;
     } catch (error: any) {
       this.handleError(error);
     }

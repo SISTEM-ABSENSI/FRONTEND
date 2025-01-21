@@ -7,7 +7,9 @@ import MobileLayout from "../layouts/MobileLayout";
 import HomeView from "../pages/home/HomeView";
 import ProfileView from "../pages/profile/ProfileView";
 import AttendanceView from "../pages/attendance/AttendanceView";
-import ScheduleView from "../pages/schedule/ScheduleView";
+import ListScheduleView from "../pages/schedule/ListScheduleView";
+import CreateScheduleView from "../pages/schedule/CreateScheduleView";
+import EditScheduleView from "../pages/schedule/EditScheduleView";
 
 const getProtectedRouters = (role: string) => {
   const mainRouters: { path: string; element: JSX.Element }[] = [];
@@ -28,7 +30,15 @@ const getProtectedRouters = (role: string) => {
     },
     {
       path: "/schedules",
-      element: <ScheduleView />,
+      element: <ListScheduleView />,
+    },
+    {
+      path: "/schedules/create",
+      element: <CreateScheduleView />,
+    },
+    {
+      path: "/schedules/edit/:id",
+      element: <EditScheduleView />,
     },
   ];
   console.log(role);

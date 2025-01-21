@@ -113,7 +113,7 @@ export default function MobileLayout() {
                 letterSpacing: ".3rem",
               }}
             >
-              FRESH ABSENSI
+              ABSENSI
             </Typography>
 
             <Tooltip title="Settings">

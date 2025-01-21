@@ -57,11 +57,12 @@ export default function AttendanceView() {
         page: 0,
         size: 50,
         filter: {
-          search: search || undefined,
-          scheduleStatus: status === "all" ? undefined : status,
+          search: search || "",
+          scheduleStatus: status === "all" ? "all" : status,
         },
       });
-      if (result) {
+
+      if (result && Array.isArray(result?.items)) {
         setAttendances(result.items);
       }
     } catch (error) {

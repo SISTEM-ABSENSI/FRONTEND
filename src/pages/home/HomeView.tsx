@@ -59,7 +59,7 @@ export default function HomeView() {
         size: 5,
         filter: { scheduleStatusNot: "checkout" },
       });
-      if (result) {
+      if (result && Array.isArray(result?.items)) {
         setSchedules(result.items);
       }
     } catch (error) {

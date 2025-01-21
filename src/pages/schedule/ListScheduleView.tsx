@@ -53,7 +53,7 @@ interface ISchedule {
   };
 }
 
-export default function ScheduleView() {
+export default function ListScheduleView() {
   const [schedules, setSchedules] = useState<ISchedule[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
@@ -63,7 +63,7 @@ export default function ScheduleView() {
     null
   );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const { handleGetTableDataRequest, handleDeleteRequest } = useHttp();
+  const { handleGetTableDataRequest, handleRemoveRequest } = useHttp();
   const navigate = useNavigate();
   const { setAppAlert } = useAppContext();
 
@@ -75,11 +75,12 @@ export default function ScheduleView() {
         page: 0,
         size: 50,
         filter: {
-          search: search || undefined,
-          scheduleStatus: status === "all" ? undefined : status,
+          search: search || "",
+          scheduleStatus: status === "all" ? "all" : status,
         },
       });
-      if (result) {
+      console.log(result);
+      if (result && Array.isArray(result?.items)) {
         setSchedules(result.items);
       }
     } catch (error) {
@@ -142,14 +143,14 @@ export default function ScheduleView() {
   const handleEdit = () => {
     handleMenuClose();
     if (selectedSchedule) {
-      navigate(`/schedule/edit/${selectedSchedule.scheduleId}`);
+      navigate(`/schedules/edit/${selectedSchedule.scheduleId}`);
     }
   };
 
   const handleDeleteConfirm = async () => {
     if (selectedSchedule) {
       try {
-        await handleDeleteRequest({
+        await handleRemoveRequest({
           path: `/schedules/${selectedSchedule.scheduleId}`,
         });
         setAppAlert({
@@ -184,7 +185,7 @@ export default function ScheduleView() {
               <Typography variant="h6">Schedule List</Typography>
               <Button
                 variant="contained"
-                onClick={() => navigate("/schedule/create")}
+                onClick={() => navigate("/schedules/create")}
               >
                 Add Schedule
               </Button>
