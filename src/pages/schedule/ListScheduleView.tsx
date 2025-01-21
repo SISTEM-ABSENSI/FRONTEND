@@ -184,7 +184,7 @@ export default function ListScheduleView() {
             >
               <Typography variant="h6">Schedule List</Typography>
               <Button
-                variant="contained"
+                variant="outlined"
                 onClick={() => navigate("/schedules/create")}
               >
                 Add Schedule
@@ -327,6 +327,7 @@ export default function ListScheduleView() {
                     />
                     <IconButton
                       size="small"
+                      disabled={schedule.scheduleStatus !== "waiting"}
                       onClick={(e) => handleMenuOpen(e, schedule)}
                     >
                       <MoreVertIcon />

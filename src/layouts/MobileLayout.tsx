@@ -22,6 +22,11 @@ import {
   Snackbar,
   Stack,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -45,11 +50,11 @@ interface NavigationItem {
 export default function MobileLayout() {
   const [value, setValue] = useState(0);
   const { appAlert, setAppAlert, isLoading, setIsLoading } = useAppContext();
-  const { removeToken, getDecodeUserToken } = useToken();
+  const { removeToken } = useToken();
   const navigate = useNavigate();
   const location = useLocation();
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
-  const user = getDecodeUserToken();
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
   const navigationItems: NavigationItem[] = [
     { label: "Home", icon: <HomeIcon />, path: "/" },
@@ -66,8 +71,12 @@ export default function MobileLayout() {
     setAnchorElUser(null);
   };
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
     handleCloseUserMenu();
+    setLogoutDialogOpen(true);
+  };
+
+  const handleLogoutConfirm = () => {
     removeToken();
     navigate("/");
     window.location.reload();
@@ -119,7 +128,6 @@ export default function MobileLayout() {
             <Tooltip title="Settings">
               <Avatar
                 onClick={handleOpenUserMenu}
-                // alt={user?.name || "User"}
                 src="/static/images/avatar/2.jpg"
                 sx={{ cursor: "pointer", width: 32, height: 32 }}
               />
@@ -140,7 +148,7 @@ export default function MobileLayout() {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-              <MenuItem onClick={handleLogout}>
+              <MenuItem onClick={handleLogoutClick}>
                 <Typography textAlign="center">Logout</Typography>
               </MenuItem>
             </Menu>
@@ -228,6 +236,25 @@ export default function MobileLayout() {
           </Alert>
         </Snackbar>
       </Stack>
+
+      {/* Logout Confirmation Dialog */}
+      <Dialog
+        open={logoutDialogOpen}
+        onClose={() => setLogoutDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Logout</DialogTitle>
+        <DialogContent>Are you sure you want to logout?</DialogContent>
+        <DialogActions>
+          <Button onClick={() => setLogoutDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handleLogoutConfirm}
+            color="error"
+            variant="contained"
+          >
+            Logout
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Box,
   Button,
@@ -9,31 +9,40 @@ import {
   Alert,
   CircularProgress,
   Paper,
+  Dialog,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useHttp } from "../../hooks/http";
 import { useAppContext } from "../../context/app.context";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import { IStoreModel } from "../../models/storeModel";
+import { PhotoCamera as PhotoCameraIcon } from "@mui/icons-material";
 
-// Fix for default marker icons
-L.Icon.Default.prototype.options.iconUrl = undefined;
-L.Icon.Default.prototype.options.iconRetinaUrl = undefined;
-L.Icon.Default.prototype.options.shadowUrl = undefined;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
-  iconUrl: require("leaflet/dist/images/marker-icon.png"),
-  shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
+// Fix the Leaflet marker icon paths
+const defaultIcon = L.icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
 });
 
-interface IStore {
-  storeId: number;
-  storeName: string;
-  storeLatitude: string;
-  storeLongitude: string;
-  storeAddress: string;
-}
+const storeIcon = L.icon({
+  iconUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x-blue.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+L.Marker.prototype.options.icon = defaultIcon;
 
 interface ILocation {
   latitude: number;
@@ -43,14 +52,20 @@ interface ILocation {
 export default function DetailAttendanceView() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { handleGetRequest, handleUpdateRequest } = useHttp();
-  const { setAppAlert, setIsLoading } = useAppContext();
+  const location = useLocation();
+  const store = location.state.store as IStoreModel;
+  const { handleUpdateRequest } = useHttp();
+  const { setAppAlert } = useAppContext();
+  const [isLoading, setIsLoading] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<ILocation | null>(
     null
   );
   const [withinRange, setWithinRange] = useState(false);
-  const [store, setStore] = useState<IStore | null>(null);
-  const MAX_DISTANCE = 100; // meters
+  const MAX_DISTANCE = 50; // meters
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const calculateDistance = (
     lat1: number,
@@ -113,33 +128,72 @@ export default function DetailAttendanceView() {
     }
   };
 
-  const getStoreDetails = async () => {
+  const startCamera = async () => {
     try {
-      setIsLoading(true);
-      const result = await handleGetRequest({
-        path: `/stores/detail/${id}`,
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
       });
-      if (result) {
-        setStore(result);
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        setShowCamera(true);
       }
     } catch (error) {
       console.error(error);
       setAppAlert({
         isDisplayAlert: true,
-        message: "Failed to fetch store details",
+        message: "Failed to access camera. Please allow camera access.",
         alertType: "error",
       });
-    } finally {
-      setIsLoading(false);
+    }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current?.srcObject) {
+      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+      tracks.forEach((track) => track.stop());
+      setShowCamera(false);
+    }
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext("2d");
+
+      // Set canvas size to match video
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // Draw video frame to canvas
+      context?.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Convert to base64
+      const photoData = canvas.toDataURL("image/jpeg");
+      setPhoto(photoData);
+      stopCamera();
     }
   };
 
   const handleCheckIn = async () => {
+    if (!photo) {
+      setAppAlert({
+        isDisplayAlert: true,
+        message: "Please take a photo first",
+        alertType: "warning",
+      });
+      return;
+    }
+
     try {
       setIsLoading(true);
       await handleUpdateRequest({
         path: "/attendances",
-        body: { attendanceId: id },
+        body: {
+          attendanceId: id,
+          photo: photo,
+        },
       });
       setAppAlert({
         isDisplayAlert: true,
@@ -160,16 +214,19 @@ export default function DetailAttendanceView() {
   };
 
   useEffect(() => {
-    getStoreDetails();
-  }, [id]);
-
-  useEffect(() => {
     if (store) {
       getLocation();
       const interval = setInterval(getLocation, 10000); // Update every 10 seconds
       return () => clearInterval(interval);
     }
-  }, [store]);
+  }, []);
+
+  // Cleanup camera on unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
 
   if (!currentLocation || !store) {
     return (
@@ -183,14 +240,6 @@ export default function DetailAttendanceView() {
       </Box>
     );
   }
-
-  const storeIcon = new L.Icon({
-    iconUrl:
-      "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-  });
 
   return (
     <Box sx={{ p: 2 }}>
@@ -219,14 +268,16 @@ export default function DetailAttendanceView() {
         }}
       >
         <MapContainer
-          center={[currentLocation.latitude, currentLocation.longitude]}
+          center={
+            [currentLocation.latitude, currentLocation.longitude] as [
+              number,
+              number
+            ]
+          }
           zoom={17}
           style={{ height: "100%", width: "100%" }}
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <Marker
             position={[currentLocation.latitude, currentLocation.longitude]}
           >
@@ -247,18 +298,92 @@ export default function DetailAttendanceView() {
       <Stack spacing={2}>
         {!withinRange && (
           <Alert severity="error">
-            You must be within 100 meters of the store location to check in
+            You must be within 50 meters of the store location to check in
           </Alert>
         )}
+
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<PhotoCameraIcon />}
+          onClick={startCamera}
+          disabled={!withinRange || isLoading}
+          fullWidth
+        >
+          Take Photo
+        </Button>
+
         <Button
           variant="contained"
-          disabled={!withinRange}
+          disabled={!withinRange || !photo || isLoading}
           onClick={handleCheckIn}
           size="large"
+          fullWidth
         >
           Check In
         </Button>
       </Stack>
+
+      {/* Camera Dialog */}
+      <Dialog open={showCamera} onClose={stopCamera} maxWidth="sm" fullWidth>
+        <DialogContent sx={{ p: 1 }}>
+          <Box sx={{ position: "relative", width: "100%" }}>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              style={{ width: "100%", height: "auto", borderRadius: 8 }}
+            />
+            <canvas ref={canvasRef} style={{ display: "none" }} />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={stopCamera}>Cancel</Button>
+          <Button
+            onClick={capturePhoto}
+            variant="contained"
+            startIcon={<PhotoCameraIcon />}
+          >
+            Capture
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Photo Preview Dialog */}
+      {photo && (
+        <Dialog
+          open={!!photo && !showCamera}
+          onClose={() => setPhoto(null)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogContent>
+            <Box
+              component="img"
+              src={photo}
+              alt="Verification photo"
+              sx={{
+                width: "100%",
+                height: "auto",
+                borderRadius: 1,
+              }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => {
+                setPhoto(null);
+                startCamera();
+              }}
+            >
+              Retake
+            </Button>
+            <Button onClick={() => setPhoto(null)} variant="contained">
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </Box>
   );
 }

@@ -19,15 +19,15 @@ import {
 import {
   AccessTime as AccessTimeIcon,
   CalendarMonth as CalendarMonthIcon,
-  LocationOn as LocationOnIcon,
   ArrowForward as ArrowForwardIcon,
+  History as HistoryIcon,
 } from "@mui/icons-material";
 import { useHttp } from "../../hooks/http";
-import { useToken } from "../../hooks/token";
 import { blue, green, orange } from "@mui/material/colors";
 import { useNavigate } from "react-router-dom";
+import { IUserModel } from "../../models/userModel";
 
-interface ISchedule {
+interface IScheduleModel {
   scheduleId: number;
   scheduleName: string;
   scheduleEndDate: string;
@@ -37,17 +37,11 @@ interface ISchedule {
   };
 }
 
-interface IUser {
-  name: string;
-  email: string;
-  userRole: string;
-}
-
 export default function HomeView() {
-  const [schedules, setSchedules] = useState<ISchedule[]>([]);
-  const [user, setUser] = useState<IUser | null>(null);
+  const [schedules, setSchedules] = useState<IScheduleModel[]>([]);
+  const [user, setUser] = useState<IUserModel | null>(null);
   const { handleGetTableDataRequest, handleGetRequest } = useHttp();
-  const { getDecodeUserToken } = useToken();
+
   const theme = useTheme();
   const navigate = useNavigate();
 
@@ -107,14 +101,14 @@ export default function HomeView() {
       icon: <CalendarMonthIcon />,
       color: green[100],
       iconColor: green[500],
-      path: "/schedule",
+      path: "/schedules",
     },
     {
-      title: "Location",
-      icon: <LocationOnIcon />,
+      title: "Attendance History",
+      icon: <HistoryIcon />,
       color: orange[100],
       iconColor: orange[500],
-      path: "/location",
+      path: "/attendances/histories",
     },
   ];
 
@@ -131,7 +125,7 @@ export default function HomeView() {
             <Box>
               <Typography variant="h6">Welcome back,</Typography>
               <Typography variant="h5" fontWeight="bold">
-                {user?.name || "User"}
+                {user?.userName || "User"}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 {user?.userRole || "Loading..."}

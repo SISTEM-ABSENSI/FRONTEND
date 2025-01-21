@@ -194,7 +194,7 @@ export default function EditScheduleView() {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 2, maxWidth: "md", margin: "0 auto" }}>
       <Card>
         <CardContent>
           <Stack spacing={3}>
@@ -293,12 +293,17 @@ export default function EditScheduleView() {
                 <Stack direction="row" spacing={2}>
                   <Button
                     variant="outlined"
-                    onClick={() => navigate("/schedule")}
+                    onClick={() => navigate("/schedules")}
                     fullWidth
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" variant="contained" fullWidth>
+                  <Button
+                    type="submit"
+                    disabled={schedule.scheduleStatus !== "waiting"}
+                    variant="contained"
+                    fullWidth
+                  >
                     Update Schedule
                   </Button>
                 </Stack>

@@ -14,6 +14,10 @@ import {
   Button,
   IconButton,
   useTheme,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import {
   Person as PersonIcon,
@@ -44,6 +48,7 @@ export default function ProfileView() {
   const { removeToken } = useToken();
   const navigate = useNavigate();
   const theme = useTheme();
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
   const getMyProfile = async () => {
     try {
@@ -58,7 +63,11 @@ export default function ProfileView() {
     getMyProfile();
   }, []);
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
+    setLogoutDialogOpen(true);
+  };
+
+  const handleLogoutConfirm = () => {
     removeToken();
     navigate("/");
     window.location.reload();
@@ -108,7 +117,7 @@ export default function ProfileView() {
             top: 8,
             right: 8,
           }}
-          onClick={() => navigate("/my-profile/edit")}
+          onClick={() => navigate("/profiles/edit")}
         >
           <EditIcon />
         </IconButton>
@@ -182,7 +191,7 @@ export default function ProfileView() {
         <Button
           variant="contained"
           startIcon={<EditIcon />}
-          onClick={() => navigate("/my-profile/edit")}
+          onClick={() => navigate("/profiles/edit")}
           fullWidth
           sx={{ py: 1.5 }}
         >
@@ -192,13 +201,32 @@ export default function ProfileView() {
           variant="outlined"
           color="error"
           startIcon={<LogoutIcon />}
-          onClick={handleLogout}
+          onClick={handleLogoutClick}
           fullWidth
           sx={{ py: 1.5 }}
         >
           Logout
         </Button>
       </Stack>
+
+      {/* Logout Confirmation Dialog */}
+      <Dialog
+        open={logoutDialogOpen}
+        onClose={() => setLogoutDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Logout</DialogTitle>
+        <DialogContent>Are you sure you want to logout?</DialogContent>
+        <DialogActions>
+          <Button onClick={() => setLogoutDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handleLogoutConfirm}
+            color="error"
+            variant="contained"
+          >
+            Logout
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

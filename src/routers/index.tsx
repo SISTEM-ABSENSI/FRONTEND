@@ -1,15 +1,19 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import ErrorPage from "../pages/error-page";
-import LoginView from "../pages/auth/Login";
+import LoginView from "../pages/auth/LoginView";
 import AuthLayout from "../layouts/AuthLayout";
 import { useToken } from "../hooks/token";
 import MobileLayout from "../layouts/MobileLayout";
 import HomeView from "../pages/home/HomeView";
 import ProfileView from "../pages/profile/ProfileView";
-import AttendanceView from "../pages/attendance/AttendanceView";
+import ListAttendanceView from "../pages/attendance/ListAttendanceView";
 import ListScheduleView from "../pages/schedule/ListScheduleView";
 import CreateScheduleView from "../pages/schedule/CreateScheduleView";
 import EditScheduleView from "../pages/schedule/EditScheduleView";
+import DetailAttendanceView from "../pages/attendance/DetailAttendanceView";
+import HistoryAttendanceView from "../pages/attendance/HistoryAttendanceView";
+import EditProfileView from "../pages/profile/EditProfileView";
+import RegisterView from "../pages/auth/RegisterView";
 
 const getProtectedRouters = (role: string) => {
   const mainRouters: { path: string; element: JSX.Element }[] = [];
@@ -25,8 +29,20 @@ const getProtectedRouters = (role: string) => {
       element: <ProfileView />,
     },
     {
+      path: "/profiles/edit",
+      element: <EditProfileView />,
+    },
+    {
       path: "/attendances",
-      element: <AttendanceView />,
+      element: <ListAttendanceView />,
+    },
+    {
+      path: "/attendances/detail/:id",
+      element: <DetailAttendanceView />,
+    },
+    {
+      path: "/attendances/histories",
+      element: <HistoryAttendanceView />,
     },
     {
       path: "/schedules",
@@ -55,6 +71,10 @@ const authRouters: { path: string; element: JSX.Element }[] = [
   {
     path: "/login",
     element: <LoginView />,
+  },
+  {
+    path: "/register",
+    element: <RegisterView />,
   },
 ];
 

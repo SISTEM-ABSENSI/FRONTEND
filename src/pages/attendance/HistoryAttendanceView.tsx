@@ -5,12 +5,8 @@ import {
   CardContent,
   Typography,
   Stack,
-  Chip,
-  IconButton,
   TextField,
   InputAdornment,
-  Tab,
-  Tabs,
   List,
   ListItem,
   ListItemText,
@@ -19,17 +15,15 @@ import {
   Divider,
   Button,
   CircularProgress,
+  Chip,
 } from "@mui/material";
 import {
   Search as SearchIcon,
   Store as StoreIcon,
-  AccessTime as AccessTimeIcon,
   CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon,
-  Schedule as ScheduleIcon,
 } from "@mui/icons-material";
 import { useHttp } from "../../hooks/http";
-import { green, orange, blue, grey } from "@mui/material/colors";
+import { green, grey, blue } from "@mui/material/colors";
 
 interface IAttendance {
   scheduleId: number;
@@ -42,11 +36,10 @@ interface IAttendance {
   };
 }
 
-export default function AttendanceView() {
+export default function HistoryAttendanceView() {
   const [attendances, setAttendances] = useState<IAttendance[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
   const { handleGetTableDataRequest } = useHttp();
 
   const getAttendances = async () => {
@@ -58,7 +51,7 @@ export default function AttendanceView() {
         size: 50,
         filter: {
           search: search || "",
-          scheduleStatus: status === "all" ? "all" : status,
+          scheduleStatus: "checkout", // Only show completed attendances
         },
       });
 
@@ -74,36 +67,7 @@ export default function AttendanceView() {
 
   useEffect(() => {
     getAttendances();
-  }, [status]);
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "checkin":
-        return {
-          color: green[500],
-          bgcolor: green[50],
-          icon: <CheckCircleIcon sx={{ color: green[500] }} />,
-        };
-      case "checkout":
-        return {
-          color: orange[500],
-          bgcolor: orange[50],
-          icon: <CancelIcon sx={{ color: orange[500] }} />,
-        };
-      case "waiting":
-        return {
-          color: blue[500],
-          bgcolor: blue[50],
-          icon: <ScheduleIcon sx={{ color: blue[500] }} />,
-        };
-      default:
-        return {
-          color: grey[500],
-          bgcolor: grey[50],
-          icon: <AccessTimeIcon sx={{ color: grey[500] }} />,
-        };
-    }
-  };
+  }, []);
 
   const handleSearch = () => {
     getAttendances();
@@ -115,7 +79,7 @@ export default function AttendanceView() {
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Stack spacing={2}>
-            <Typography variant="h6">Attendance List</Typography>
+            <Typography variant="h6">Attendance History</Typography>
             <TextField
               fullWidth
               size="small"
@@ -142,57 +106,11 @@ export default function AttendanceView() {
                 ),
               }}
             />
-            <Tabs
-              value={status}
-              onChange={(_, newValue) => setStatus(newValue)}
-              variant="scrollable"
-              scrollButtons="auto"
-            >
-              <Tab
-                label={
-                  <Chip
-                    label="All"
-                    variant={status === "all" ? "filled" : "outlined"}
-                  />
-                }
-                value="all"
-              />
-              <Tab
-                label={
-                  <Chip
-                    label="Waiting"
-                    color="primary"
-                    variant={status === "waiting" ? "filled" : "outlined"}
-                  />
-                }
-                value="waiting"
-              />
-              <Tab
-                label={
-                  <Chip
-                    label="Check In"
-                    color="success"
-                    variant={status === "checkin" ? "filled" : "outlined"}
-                  />
-                }
-                value="checkin"
-              />
-              <Tab
-                label={
-                  <Chip
-                    label="Check Out"
-                    color="warning"
-                    variant={status === "checkout" ? "filled" : "outlined"}
-                  />
-                }
-                value="checkout"
-              />
-            </Tabs>
           </Stack>
         </CardContent>
       </Card>
 
-      {/* Attendance List */}
+      {/* Attendance History List */}
       <Card>
         <List>
           {loading ? (
@@ -238,14 +156,13 @@ export default function AttendanceView() {
                     }
                   />
                   <Stack alignItems="center" spacing={1}>
-                    {getStatusColor(attendance.scheduleStatus).icon}
+                    <CheckCircleIcon sx={{ color: green[500] }} />
                     <Chip
-                      label={attendance.scheduleStatus.toUpperCase()}
+                      label="COMPLETED"
                       size="small"
                       sx={{
-                        color: getStatusColor(attendance.scheduleStatus).color,
-                        bgcolor: getStatusColor(attendance.scheduleStatus)
-                          .bgcolor,
+                        color: green[500],
+                        bgcolor: green[50],
                       }}
                     />
                   </Stack>
@@ -256,7 +173,7 @@ export default function AttendanceView() {
           ) : (
             <Box sx={{ p: 4, textAlign: "center" }}>
               <Typography color="text.secondary">
-                No attendance records found
+                No attendance history found
               </Typography>
             </Box>
           )}

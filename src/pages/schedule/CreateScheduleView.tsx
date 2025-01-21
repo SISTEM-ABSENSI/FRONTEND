@@ -12,6 +12,8 @@ import {
   Select,
   MenuItem,
   FormHelperText,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useHttp } from "../../hooks/http";
@@ -35,7 +37,8 @@ interface IScheduleCreate {
 export default function CreateScheduleView() {
   const navigate = useNavigate();
   const { handleGetRequest, handlePostRequest } = useHttp();
-  const { setAppAlert, setIsLoading } = useAppContext();
+  const { setAppAlert } = useAppContext();
+  const [isLoading, setIsLoading] = useState(false);
   const [stores, setStores] = useState<IStore[]>([]);
   const [schedule, setSchedule] = useState<IScheduleCreate>({
     scheduleName: "",
@@ -51,10 +54,11 @@ export default function CreateScheduleView() {
     scheduleStartDate: "",
     scheduleEndDate: "",
   });
+  const [pageLoading, setPageLoading] = useState(true);
 
   const getStores = async () => {
     try {
-      setIsLoading(true);
+      setPageLoading(true);
       const result = await handleGetRequest({
         path: "/stores",
       });
@@ -69,7 +73,7 @@ export default function CreateScheduleView() {
         alertType: "error",
       });
     } finally {
-      setIsLoading(false);
+      setPageLoading(false);
     }
   };
 
@@ -160,119 +164,134 @@ export default function CreateScheduleView() {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Card>
-        <CardContent>
-          <Stack spacing={3}>
-            <Typography variant="h6">Create New Schedule</Typography>
+    <Box sx={{ p: 2, maxWidth: "md", margin: "0 auto" }}>
+      <Backdrop
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          backgroundColor: "rgba(0, 0, 0, 0.7)",
+        }}
+        open={pageLoading}
+      >
+        <CircularProgress color="primary" />
+      </Backdrop>
 
-            <form onSubmit={handleSubmit}>
-              <Stack spacing={3}>
-                <TextField
-                  fullWidth
-                  label="Schedule Name"
-                  value={schedule.scheduleName}
-                  onChange={(e) =>
-                    setSchedule({ ...schedule, scheduleName: e.target.value })
-                  }
-                  error={!!errors.scheduleName}
-                  helperText={errors.scheduleName}
-                />
+      <Box sx={{ p: 2 }}>
+        <Card>
+          <CardContent>
+            <Stack spacing={3}>
+              <Typography variant="h6">Create New Schedule</Typography>
 
-                <FormControl error={!!errors.scheduleStoreId}>
-                  <InputLabel>Store</InputLabel>
-                  <Select
-                    value={schedule.scheduleStoreId || ""}
-                    label="Store"
+              <form onSubmit={handleSubmit}>
+                <Stack spacing={3}>
+                  <TextField
+                    fullWidth
+                    label="Schedule Name"
+                    value={schedule.scheduleName}
+                    onChange={(e) =>
+                      setSchedule({ ...schedule, scheduleName: e.target.value })
+                    }
+                    error={!!errors.scheduleName}
+                    helperText={errors.scheduleName}
+                  />
+
+                  <FormControl error={!!errors.scheduleStoreId}>
+                    <InputLabel>Store</InputLabel>
+                    <Select
+                      value={schedule.scheduleStoreId || ""}
+                      label="Store"
+                      onChange={(e) =>
+                        setSchedule({
+                          ...schedule,
+                          scheduleStoreId: Number(e.target.value),
+                        })
+                      }
+                    >
+                      {stores.map((store) => (
+                        <MenuItem key={store.storeId} value={store.storeId}>
+                          {store.storeName}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {errors.scheduleStoreId && (
+                      <FormHelperText>{errors.scheduleStoreId}</FormHelperText>
+                    )}
+                  </FormControl>
+
+                  <TextField
+                    fullWidth
+                    label="Description"
+                    multiline
+                    rows={4}
+                    value={schedule.scheduleDescription}
                     onChange={(e) =>
                       setSchedule({
                         ...schedule,
-                        scheduleStoreId: Number(e.target.value),
+                        scheduleDescription: e.target.value,
                       })
                     }
-                  >
-                    {stores.map((store) => (
-                      <MenuItem key={store.storeId} value={store.storeId}>
-                        {store.storeName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {errors.scheduleStoreId && (
-                    <FormHelperText>{errors.scheduleStoreId}</FormHelperText>
-                  )}
-                </FormControl>
+                  />
 
-                <TextField
-                  fullWidth
-                  label="Description"
-                  multiline
-                  rows={4}
-                  value={schedule.scheduleDescription}
-                  onChange={(e) =>
-                    setSchedule({
-                      ...schedule,
-                      scheduleDescription: e.target.value,
-                    })
-                  }
-                />
-
-                <TextField
-                  fullWidth
-                  label="Start Date & Time"
-                  type="datetime-local"
-                  value={
-                    schedule.scheduleStartDate
-                      ? moment(schedule.scheduleStartDate).format(
-                          "YYYY-MM-DDTHH:mm"
-                        )
-                      : ""
-                  }
-                  onChange={(e) =>
-                    handleDateTimeChange("start", e.target.value)
-                  }
-                  error={!!errors.scheduleStartDate}
-                  helperText={errors.scheduleStartDate}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-
-                <TextField
-                  fullWidth
-                  label="End Date & Time"
-                  type="datetime-local"
-                  value={
-                    schedule.scheduleEndDate
-                      ? moment(schedule.scheduleEndDate).format(
-                          "YYYY-MM-DDTHH:mm"
-                        )
-                      : ""
-                  }
-                  onChange={(e) => handleDateTimeChange("end", e.target.value)}
-                  error={!!errors.scheduleEndDate}
-                  helperText={errors.scheduleEndDate}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-
-                <Stack direction="row" spacing={2}>
-                  <Button
-                    variant="outlined"
-                    onClick={() => navigate("/schedule")}
+                  <TextField
                     fullWidth
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" variant="contained" fullWidth>
-                    Create Schedule
-                  </Button>
+                    label="Start Date & Time"
+                    type="datetime-local"
+                    value={
+                      schedule.scheduleStartDate
+                        ? moment(schedule.scheduleStartDate).format(
+                            "YYYY-MM-DDTHH:mm"
+                          )
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleDateTimeChange("start", e.target.value)
+                    }
+                    error={!!errors.scheduleStartDate}
+                    helperText={errors.scheduleStartDate}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+
+                  <TextField
+                    fullWidth
+                    label="End Date & Time"
+                    type="datetime-local"
+                    value={
+                      schedule.scheduleEndDate
+                        ? moment(schedule.scheduleEndDate).format(
+                            "YYYY-MM-DDTHH:mm"
+                          )
+                        : ""
+                    }
+                    onChange={(e) =>
+                      handleDateTimeChange("end", e.target.value)
+                    }
+                    error={!!errors.scheduleEndDate}
+                    helperText={errors.scheduleEndDate}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+
+                  <Stack direction="row" spacing={2}>
+                    <Button
+                      variant="outlined"
+                      onClick={() => navigate("/schedule")}
+                      fullWidth
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" variant="contained" fullWidth>
+                      Create Schedule
+                    </Button>
+                  </Stack>
                 </Stack>
-              </Stack>
-            </form>
-          </Stack>
-        </CardContent>
-      </Card>
+              </form>
+            </Stack>
+          </CardContent>
+        </Card>
+      </Box>
     </Box>
   );
 }
