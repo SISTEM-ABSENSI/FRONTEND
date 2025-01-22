@@ -27,13 +27,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useHttp } from "../../hooks/http";
 import { blue } from "@mui/material/colors";
 
-interface ISupplier {
-  userId: number;
-  userName: string;
-}
-
 interface IRegisterPayload {
-  userSupplierId: number;
   userName: string;
   userPassword: string;
   userContact: string;
@@ -49,46 +43,23 @@ const getDeviceId = () => {
 
 export default function RegisterView() {
   const navigate = useNavigate();
-  const { handlePostRequest, handleGetRequest } = useHttp();
+  const { handlePostRequest } = useHttp();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
   const [deviceId] = useState<string>(getDeviceId());
 
   const [formData, setFormData] = useState({
     userName: "",
-    userSupplierId: "",
     userContact: "",
     userPassword: "",
   });
 
   const [errors, setErrors] = useState({
     userName: "",
-    userSupplierId: "",
     userContact: "",
     userPassword: "",
     general: "",
   });
-
-  const getSuppliers = async () => {
-    try {
-      setLoading(true);
-      const result = await handleGetRequest({
-        path: "/suppliers",
-      });
-      if (result?.items) {
-        setSuppliers(result.items);
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    getSuppliers();
-  }, []);
 
   const validateForm = () => {
     let isValid = true;
@@ -96,11 +67,6 @@ export default function RegisterView() {
 
     if (formData.userName.length < 5 || formData.userName.length > 15) {
       newErrors.userName = "Name must be between 5 and 15 characters";
-      isValid = false;
-    }
-
-    if (!formData.userSupplierId) {
-      newErrors.userSupplierId = "Please select a supplier";
       isValid = false;
     }
 
@@ -125,16 +91,15 @@ export default function RegisterView() {
     try {
       setLoading(true);
       const payload: IRegisterPayload = {
-        userSupplierId: Number(formData.userSupplierId),
         userName: formData.userName,
         userPassword: formData.userPassword,
         userContact: formData.userContact,
         userDeviceId: deviceId,
-        userRole: "spg",
+        userRole: "user",
       };
 
       await handlePostRequest({
-        path: "/users/register",
+        path: "/auth/register",
         body: payload,
       });
 
@@ -204,27 +169,6 @@ export default function RegisterView() {
                 }}
                 sx={{ bgcolor: "background.paper" }}
               />
-
-              <FormControl error={!!errors.userSupplierId}>
-                <InputLabel>Supplier</InputLabel>
-                <Select
-                  value={formData.userSupplierId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, userSupplierId: e.target.value })
-                  }
-                  label="Supplier"
-                  sx={{ bgcolor: "background.paper" }}
-                >
-                  {suppliers.map((supplier) => (
-                    <MenuItem key={supplier.userId} value={supplier.userId}>
-                      {supplier.userName}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {errors.userSupplierId && (
-                  <FormHelperText>{errors.userSupplierId}</FormHelperText>
-                )}
-              </FormControl>
 
               <TextField
                 label="Phone Number"

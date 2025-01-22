@@ -36,7 +36,7 @@ export default function LoginView() {
   const handleSubmit = async () => {
     try {
       const result = await handlePostRequest({
-        path: "/users/login",
+        path: "/auth/login",
         body: userPayload,
       });
 

@@ -277,7 +277,7 @@ export default function CreateScheduleView() {
                   <Stack direction="row" spacing={2}>
                     <Button
                       variant="outlined"
-                      onClick={() => navigate("/schedule")}
+                      onClick={() => navigate("/schedules")}
                       fullWidth
                     >
                       Cancel

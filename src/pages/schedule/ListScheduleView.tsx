@@ -147,25 +147,28 @@ export default function ListScheduleView() {
     }
   };
 
+  const handleDeleteClick = () => {
+    handleMenuClose();
+    setDeleteDialogOpen(true);
+  };
+
   const handleDeleteConfirm = async () => {
-    if (selectedSchedule) {
-      try {
-        await handleRemoveRequest({
-          path: `/schedules/${selectedSchedule.scheduleId}`,
-        });
-        setAppAlert({
-          isDisplayAlert: true,
-          message: "Schedule deleted successfully",
-          alertType: "success",
-        });
-        getSchedules();
-      } catch (error) {
-        setAppAlert({
-          isDisplayAlert: true,
-          message: "Failed to delete schedule",
-          alertType: "error",
-        });
-      }
+    try {
+      await handleRemoveRequest({
+        path: `/schedules/${selectedSchedule?.scheduleId}`,
+      });
+      setAppAlert({
+        isDisplayAlert: true,
+        message: "Schedule deleted successfully",
+        alertType: "success",
+      });
+      getSchedules();
+    } catch (error) {
+      setAppAlert({
+        isDisplayAlert: true,
+        message: "Failed to delete schedule",
+        alertType: "error",
+      });
     }
     setDeleteDialogOpen(false);
     handleMenuClose();
@@ -355,13 +358,7 @@ export default function ListScheduleView() {
           <EditIcon sx={{ mr: 1, color: blue[500] }} />
           Edit
         </MenuItem>
-        <MenuItem
-          onClick={() => {
-            handleMenuClose();
-            setDeleteDialogOpen(true);
-          }}
-          sx={{ color: red[500] }}
-        >
+        <MenuItem onClick={handleDeleteClick} sx={{ color: red[500] }}>
           <DeleteIcon sx={{ mr: 1 }} />
           Delete
         </MenuItem>
