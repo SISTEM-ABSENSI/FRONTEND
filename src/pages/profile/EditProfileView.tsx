@@ -14,24 +14,16 @@ import { useNavigate } from "react-router-dom";
 import { useHttp } from "../../hooks/http";
 import { useAppContext } from "../../context/app.context";
 import { PhotoCamera as PhotoCameraIcon } from "@mui/icons-material";
-
-interface IProfile {
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  photo?: string;
-}
+import { IUserUpdateRequestModel } from "../../models/userModel";
 
 export default function EditProfileView() {
   const navigate = useNavigate();
   const { handleUpdateRequest } = useHttp();
   const { setAppAlert, setIsLoading } = useAppContext();
-  const [profile, setProfile] = useState<IProfile>({
-    name: "",
-    email: "",
-    phone: "",
-    address: "",
+  const [profile, setProfile] = useState<IUserUpdateRequestModel>({
+    userId: "",
+    userName: "",
+    userContact: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,10 +62,7 @@ export default function EditProfileView() {
             <form onSubmit={handleSubmit}>
               <Stack spacing={3} alignItems="center">
                 <Box position="relative">
-                  <Avatar
-                    src={profile.photo}
-                    sx={{ width: 100, height: 100 }}
-                  />
+                  <Avatar sx={{ width: 100, height: 100 }} />
                   <IconButton
                     sx={{
                       position: "absolute",
@@ -90,20 +79,9 @@ export default function EditProfileView() {
                 <TextField
                   fullWidth
                   label="Full Name"
-                  value={profile.name}
+                  value={profile.userName}
                   onChange={(e) =>
-                    setProfile({ ...profile, name: e.target.value })
-                  }
-                  required
-                />
-
-                <TextField
-                  fullWidth
-                  label="Email"
-                  type="email"
-                  value={profile.email}
-                  onChange={(e) =>
-                    setProfile({ ...profile, email: e.target.value })
+                    setProfile({ ...profile, userName: e.target.value })
                   }
                   required
                 />
@@ -111,22 +89,11 @@ export default function EditProfileView() {
                 <TextField
                   fullWidth
                   label="Phone Number"
-                  value={profile.phone}
+                  value={profile.userContact}
                   onChange={(e) =>
-                    setProfile({ ...profile, phone: e.target.value })
+                    setProfile({ ...profile, userContact: e.target.value })
                   }
                   required
-                />
-
-                <TextField
-                  fullWidth
-                  label="Address"
-                  multiline
-                  rows={3}
-                  value={profile.address}
-                  onChange={(e) =>
-                    setProfile({ ...profile, address: e.target.value })
-                  }
                 />
 
                 <Stack direction="row" spacing={2} width="100%">

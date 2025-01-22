@@ -80,11 +80,6 @@ export default function ProfileView() {
       value: profile?.userName || "-",
     },
     {
-      icon: <EmailIcon />,
-      label: "Email",
-      value: profile?.userEmail || "-",
-    },
-    {
       icon: <PhoneIcon />,
       label: "Contact",
       value: profile?.userContact || "-",

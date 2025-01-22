@@ -51,6 +51,7 @@ interface ILocation {
 
 export default function DetailAttendanceView() {
   const { id } = useParams();
+  console.log("___id___", id);
   const navigate = useNavigate();
   const location = useLocation();
   const store = location.state.store as IStoreModel;
@@ -192,7 +193,7 @@ export default function DetailAttendanceView() {
         path: "/attendances",
         body: {
           attendanceId: id,
-          photo: photo,
+          attendancePhoto: photo,
         },
       });
       setAppAlert({
