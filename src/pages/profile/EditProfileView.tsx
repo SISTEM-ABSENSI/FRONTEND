@@ -77,7 +77,7 @@ export default function EditProfileView() {
                     }}
                     size="small"
                   >
-                    <PhotoCameraIcon />
+                    {/* <PhotoCameraIcon /> */}
                   </IconButton>
                 </Box>
 
@@ -88,7 +88,6 @@ export default function EditProfileView() {
                   onChange={(e) =>
                     setProfile({ ...profile, userName: e.target.value })
                   }
-                  required
                 />
 
                 <TextField
@@ -98,7 +97,6 @@ export default function EditProfileView() {
                   onChange={(e) =>
                     setProfile({ ...profile, userContact: e.target.value })
                   }
-                  required
                 />
 
                 <TextField
