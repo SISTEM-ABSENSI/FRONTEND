@@ -51,7 +51,7 @@ interface ILocation {
 
 export default function DetailAttendanceView() {
   const { id } = useParams();
-  console.log("___id___", id);
+
   const navigate = useNavigate();
   const location = useLocation();
   const store = location.state.store as IStoreModel;
@@ -280,6 +280,7 @@ export default function DetailAttendanceView() {
         >
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <Marker
+            icon={defaultIcon}
             position={[currentLocation.latitude, currentLocation.longitude]}
           >
             <Popup>Your Location</Popup>
@@ -289,7 +290,7 @@ export default function DetailAttendanceView() {
               Number(store.storeLatitude),
               Number(store.storeLongitude),
             ]}
-            icon={storeIcon}
+            icon={defaultIcon}
           >
             <Popup>{store.storeName}</Popup>
           </Marker>

@@ -36,8 +36,9 @@ export default function EditScheduleView() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { handleGetRequest, handleUpdateRequest } = useHttp();
-  const { setAppAlert, setIsLoading } = useAppContext();
+  const { setAppAlert } = useAppContext();
   const [stores, setStores] = useState<IStore[]>([]);
+  const [loading, setLoading] = useState(false);
   const [schedule, setSchedule] = useState<ISchedule>({
     scheduleName: "",
     scheduleDescription: "",
@@ -55,7 +56,7 @@ export default function EditScheduleView() {
 
   const getSchedule = async () => {
     try {
-      setIsLoading(true);
+      setLoading(true);
       const result = await handleGetRequest({
         path: `/schedules/detail/${id}`,
       });
@@ -79,13 +80,13 @@ export default function EditScheduleView() {
       });
       navigate("/schedules");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   const getStores = async () => {
     try {
-      setIsLoading(true);
+      setLoading(true);
       const result = await handleGetRequest({
         path: "/stores",
       });
@@ -100,7 +101,7 @@ export default function EditScheduleView() {
         alertType: "error",
       });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -170,7 +171,7 @@ export default function EditScheduleView() {
     if (!validateForm()) return;
 
     try {
-      setIsLoading(true);
+      setLoading(true);
       await handleUpdateRequest({
         path: `/schedules`,
         body: { ...schedule, scheduleId: id },
@@ -189,7 +190,7 @@ export default function EditScheduleView() {
         alertType: "error",
       });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 

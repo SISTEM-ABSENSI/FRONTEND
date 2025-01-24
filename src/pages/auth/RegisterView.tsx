@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Button,
   Card,
@@ -9,11 +9,6 @@ import {
   InputAdornment,
   IconButton,
   Stack,
-  MenuItem,
-  FormHelperText,
-  FormControl,
-  InputLabel,
-  Select,
   CircularProgress,
 } from "@mui/material";
 import {
@@ -23,7 +18,7 @@ import {
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon,
 } from "@mui/icons-material";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useHttp } from "../../hooks/http";
 import { blue } from "@mui/material/colors";
 
@@ -42,7 +37,6 @@ const getDeviceId = () => {
 };
 
 export default function RegisterView() {
-  const navigate = useNavigate();
   const { handlePostRequest } = useHttp();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -102,8 +96,7 @@ export default function RegisterView() {
         path: "/auth/register",
         body: payload,
       });
-
-      navigate("/login");
+      window.history.back();
     } catch (error: any) {
       setErrors({
         ...errors,

@@ -16,7 +16,7 @@ import {
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon,
 } from "@mui/icons-material";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useHttp } from "../../hooks/http";
 import { useToken } from "../../hooks/token";
 import { IUserLoginRequestModel } from "../../models/userModel";
@@ -25,7 +25,6 @@ import { blue } from "@mui/material/colors";
 export default function LoginView() {
   const { handlePostRequest } = useHttp();
   const { setToken } = useToken();
-  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
   const [userPayload, setUserPayload] = useState<IUserLoginRequestModel>({
@@ -41,9 +40,8 @@ export default function LoginView() {
       });
 
       if (result && result?.token) {
-        setToken(result?.token);
         window.location.reload();
-        navigate("/");
+        setToken(result?.token);
       }
     } catch (error: unknown) {
       console.log(error);

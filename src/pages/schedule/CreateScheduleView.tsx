@@ -38,7 +38,6 @@ export default function CreateScheduleView() {
   const navigate = useNavigate();
   const { handleGetRequest, handlePostRequest } = useHttp();
   const { setAppAlert } = useAppContext();
-  const [isLoading, setIsLoading] = useState(false);
   const [stores, setStores] = useState<IStore[]>([]);
   const [schedule, setSchedule] = useState<IScheduleCreate>({
     scheduleName: "",
@@ -140,7 +139,6 @@ export default function CreateScheduleView() {
     if (!validateForm()) return;
 
     try {
-      setIsLoading(true);
       await handlePostRequest({
         path: "/schedules",
         body: schedule,
@@ -158,8 +156,6 @@ export default function CreateScheduleView() {
         message: "Failed to create schedule",
         alertType: "error",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 

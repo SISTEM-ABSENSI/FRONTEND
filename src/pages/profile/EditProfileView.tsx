@@ -9,51 +9,56 @@ import {
   Button,
   Avatar,
   IconButton,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useHttp } from "../../hooks/http";
-import { useAppContext } from "../../context/app.context";
 import { PhotoCamera as PhotoCameraIcon } from "@mui/icons-material";
 import { IUserUpdateRequestModel } from "../../models/userModel";
 
 export default function EditProfileView() {
   const navigate = useNavigate();
   const { handleUpdateRequest } = useHttp();
-  const { setAppAlert, setIsLoading } = useAppContext();
+
+  const [loading, setLoading] = useState(false);
+
   const [profile, setProfile] = useState<IUserUpdateRequestModel>({
     userId: "",
     userName: "",
     userContact: "",
+    userPassword: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      setIsLoading(true);
+      setLoading(true);
       await handleUpdateRequest({
-        path: "/users/profile",
+        path: "/my-profile",
         body: profile,
       });
-      setAppAlert({
-        isDisplayAlert: true,
-        message: "Profile updated successfully",
-        alertType: "success",
-      });
+
       navigate("/profiles");
     } catch (error) {
       console.error(error);
-      setAppAlert({
-        isDisplayAlert: true,
-        message: "Failed to update profile",
-        alertType: "error",
-      });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
     <Box sx={{ p: 2 }}>
+      <Backdrop
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          backgroundColor: "rgba(0, 0, 0, 0.7)",
+        }}
+        open={loading}
+      >
+        <CircularProgress color="primary" />
+      </Backdrop>
       <Card>
         <CardContent>
           <Stack spacing={3}>
@@ -94,6 +99,15 @@ export default function EditProfileView() {
                     setProfile({ ...profile, userContact: e.target.value })
                   }
                   required
+                />
+
+                <TextField
+                  fullWidth
+                  label="Password"
+                  value={profile.userPassword}
+                  onChange={(e) =>
+                    setProfile({ ...profile, userPassword: e.target.value })
+                  }
                 />
 
                 <Stack direction="row" spacing={2} width="100%">

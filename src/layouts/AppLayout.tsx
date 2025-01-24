@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { styled, useTheme, Theme, CSSObject } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import MuiDrawer from "@mui/material/Drawer";
@@ -35,7 +34,6 @@ import {
 import { useAppContext } from "../context/app.context";
 import { IconMenus } from "../components/icon";
 import { useToken } from "../hooks/token";
-import logo from "../assets/logo.png";
 
 const drawerWidth = 240;
 
