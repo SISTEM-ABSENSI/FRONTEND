@@ -12,6 +12,8 @@ import {
   Select,
   MenuItem,
   FormHelperText,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useHttp } from "../../hooks/http";
@@ -196,6 +198,16 @@ export default function EditScheduleView() {
 
   return (
     <Box sx={{ p: 2, maxWidth: "md", margin: "0 auto" }}>
+      <Backdrop
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          backgroundColor: "rgba(0, 0, 0, 0.7)",
+        }}
+        open={loading}
+      >
+        <CircularProgress color="primary" />
+      </Backdrop>
       <Card>
         <CardContent>
           <Stack spacing={3}>

@@ -14,7 +14,6 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useHttp } from "../../hooks/http";
-import { PhotoCamera as PhotoCameraIcon } from "@mui/icons-material";
 import { IUserUpdateRequestModel } from "../../models/userModel";
 
 export default function EditProfileView() {
