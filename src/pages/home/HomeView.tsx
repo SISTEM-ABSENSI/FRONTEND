@@ -127,9 +127,6 @@ export default function HomeView() {
               <Typography variant="h5" fontWeight="bold">
                 {user?.userName || "User"}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {user?.userRole || "Loading..."}
-              </Typography>
             </Box>
           </Stack>
         </CardContent>
