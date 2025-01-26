@@ -204,19 +204,29 @@ export default function ListAttendanceView() {
             attendances.map((attendance, index) => (
               <Box key={attendance.scheduleId}>
                 <ListItem
-                  onClick={() =>
-                    navigate(`/attendances/detail/${attendance.scheduleId}`, {
-                      state: {
-                        store: attendance.store,
-                      },
-                    })
-                  }
+                  disabled={attendance.scheduleStatus === "checkout"}
+                  onClick={() => {
+                    if (attendance.scheduleStatus !== "checkout") {
+                      navigate(`/attendances/detail/${attendance.scheduleId}`, {
+                        state: {
+                          store: attendance.store,
+                        },
+                      });
+                    }
+                  }}
                   sx={{
                     py: 2,
                     "&:hover": {
-                      bgcolor: grey[50],
+                      bgcolor:
+                        attendance.scheduleStatus === "checkout"
+                          ? "inherit"
+                          : grey[50],
                     },
-                    cursor: "pointer",
+                    cursor:
+                      attendance.scheduleStatus === "checkout"
+                        ? "default"
+                        : "pointer",
+                    opacity: attendance.scheduleStatus === "checkout" ? 0.5 : 1,
                   }}
                 >
                   <ListItemIcon>

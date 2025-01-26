@@ -54,7 +54,8 @@ export default function DetailAttendanceView() {
   const [withinRange, setWithinRange] = useState(false);
   const MAX_DISTANCE = 50; // meters
   const [photo, setPhoto] = useState<string | null>(null);
-  const [showCamera, setShowCamera] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState<boolean>(false);
+  const [showCamera, setShowCamera] = useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -122,29 +123,25 @@ export default function DetailAttendanceView() {
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" },
+        video: true,
       });
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        setShowCamera(true);
       }
     } catch (error) {
-      console.error(error);
-      setAppAlert({
-        isDisplayAlert: true,
-        message: "Failed to access camera. Please allow camera access.",
-        alertType: "error",
-      });
+      console.error("Error accessing camera:", error);
+      setShowCamera(false);
     }
   };
 
   const stopCamera = () => {
-    if (videoRef.current?.srcObject) {
+    if (videoRef.current && videoRef.current.srcObject) {
       const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
       tracks.forEach((track) => track.stop());
-      setShowCamera(false);
+      videoRef.current.srcObject = null;
     }
+    setShowCamera(false);
   };
 
   const capturePhoto = () => {
@@ -166,6 +163,8 @@ export default function DetailAttendanceView() {
       stopCamera();
     }
   };
+
+  console.log(photo);
 
   const handleCheckIn = async () => {
     if (!photo) {
@@ -191,7 +190,7 @@ export default function DetailAttendanceView() {
         message: "Successfully checked in",
         alertType: "success",
       });
-      navigate("/attendance");
+      window.history.back();
     } catch (error) {
       console.error(error);
       setAppAlert({
@@ -202,6 +201,11 @@ export default function DetailAttendanceView() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const openCamera = () => {
+    setShowCamera(true);
+    startCamera();
   };
 
   useEffect(() => {
@@ -294,15 +298,28 @@ export default function DetailAttendanceView() {
           </Alert>
         )}
 
+        {photo && (
+          <Box
+            component="img"
+            src={photo}
+            alt="Verification photo"
+            sx={{
+              width: "100%",
+              height: "auto",
+              borderRadius: 1,
+            }}
+          />
+        )}
+
         <Button
           variant="outlined"
           color="primary"
           startIcon={<PhotoCameraIcon />}
-          onClick={startCamera}
+          onClick={openCamera}
           disabled={!withinRange || isLoading}
           fullWidth
         >
-          Take Photo
+          Open Camera
         </Button>
 
         <Button
@@ -340,42 +357,6 @@ export default function DetailAttendanceView() {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Photo Preview Dialog */}
-      {photo && (
-        <Dialog
-          open={!!photo && !showCamera}
-          onClose={() => setPhoto(null)}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogContent>
-            <Box
-              component="img"
-              src={photo}
-              alt="Verification photo"
-              sx={{
-                width: "100%",
-                height: "auto",
-                borderRadius: 1,
-              }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => {
-                setPhoto(null);
-                startCamera();
-              }}
-            >
-              Retake
-            </Button>
-            <Button onClick={() => setPhoto(null)} variant="contained">
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
     </Box>
   );
 }
