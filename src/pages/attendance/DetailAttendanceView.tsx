@@ -245,7 +245,7 @@ export default function DetailAttendanceView() {
           </Typography>
           <Stack spacing={1}>
             <Typography variant="subtitle1">
-              Store: {attendance?.store?.storeName}
+              Clinic: {attendance?.store?.storeName}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Address: {attendance?.store?.storeAddress}
@@ -294,7 +294,7 @@ export default function DetailAttendanceView() {
       <Stack spacing={2}>
         {!withinRange && (
           <Alert severity="error">
-            You must be within 50 meters of the store location to check in
+            You must be within 50 meters of the Clinic location to check in
           </Alert>
         )}
 

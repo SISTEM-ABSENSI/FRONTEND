@@ -227,10 +227,10 @@ export default function EditScheduleView() {
                 />
 
                 <FormControl error={!!errors.scheduleStoreId}>
-                  <InputLabel>Store</InputLabel>
+                  <InputLabel>Clinic</InputLabel>
                   <Select
                     value={schedule.scheduleStoreId || ""}
-                    label="Store"
+                    label="Clinic"
                     onChange={(e) =>
                       setSchedule({
                         ...schedule,
