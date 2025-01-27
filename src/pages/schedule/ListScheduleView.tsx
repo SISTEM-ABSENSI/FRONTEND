@@ -262,7 +262,7 @@ export default function ListScheduleView() {
                     variant={status === "done" ? "filled" : "outlined"}
                   />
                 }
-                value="done"
+                value="checkout"
               />
             </Tabs>
           </Stack>

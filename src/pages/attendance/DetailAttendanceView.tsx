@@ -21,6 +21,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { IStoreModel } from "../../models/storeModel";
 import { PhotoCamera as PhotoCameraIcon } from "@mui/icons-material";
+import { IAttendanceModel } from "../../models/attendanceModel";
 
 // Fix the Leaflet marker icon paths
 const defaultIcon = L.icon({
@@ -39,12 +40,14 @@ interface ILocation {
   longitude: number;
 }
 
+interface IState extends IAttendanceModel {
+  store: IStoreModel;
+}
+
 export default function DetailAttendanceView() {
   const { id } = useParams();
-
-  const navigate = useNavigate();
   const location = useLocation();
-  const store = location.state.store as IStoreModel;
+  const attendance = location.state.attendance as IState;
   const { handleUpdateRequest } = useHttp();
   const { setAppAlert } = useAppContext();
   const [isLoading, setIsLoading] = useState(false);
@@ -52,9 +55,8 @@ export default function DetailAttendanceView() {
     null
   );
   const [withinRange, setWithinRange] = useState(false);
-  const MAX_DISTANCE = 50; // meters
+  const MAX_DISTANCE = 5000; // meters
   const [photo, setPhoto] = useState<string | null>(null);
-  const [isCameraOpen, setIsCameraOpen] = useState<boolean>(false);
   const [showCamera, setShowCamera] = useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -87,12 +89,12 @@ export default function DetailAttendanceView() {
           const { latitude, longitude } = position.coords;
           setCurrentLocation({ latitude, longitude });
 
-          if (store) {
+          if (attendance?.store) {
             const distance = calculateDistance(
               latitude,
               longitude,
-              Number(store.storeLatitude),
-              Number(store.storeLongitude)
+              Number(attendance?.store?.storeLatitude),
+              Number(attendance?.store?.storeLongitude)
             );
             setWithinRange(distance <= MAX_DISTANCE);
           }
@@ -164,8 +166,6 @@ export default function DetailAttendanceView() {
     }
   };
 
-  console.log(photo);
-
   const handleCheckIn = async () => {
     if (!photo) {
       setAppAlert({
@@ -209,7 +209,7 @@ export default function DetailAttendanceView() {
   };
 
   useEffect(() => {
-    if (store) {
+    if (attendance?.store) {
       getLocation();
       const interval = setInterval(getLocation, 10000); // Update every 10 seconds
       return () => clearInterval(interval);
@@ -223,7 +223,7 @@ export default function DetailAttendanceView() {
     };
   }, []);
 
-  if (!currentLocation || !store) {
+  if (!currentLocation || !attendance?.store) {
     return (
       <Box
         display="flex"
@@ -245,10 +245,10 @@ export default function DetailAttendanceView() {
           </Typography>
           <Stack spacing={1}>
             <Typography variant="subtitle1">
-              Store: {store.storeName}
+              Store: {attendance?.store?.storeName}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Address: {store.storeAddress}
+              Address: {attendance?.store?.storeAddress}
             </Typography>
           </Stack>
         </CardContent>
@@ -281,12 +281,12 @@ export default function DetailAttendanceView() {
           </Marker>
           <Marker
             position={[
-              Number(store.storeLatitude),
-              Number(store.storeLongitude),
+              Number(attendance?.store?.storeLatitude),
+              Number(attendance?.store?.storeLongitude),
             ]}
             icon={defaultIcon}
           >
-            <Popup>{store.storeName}</Popup>
+            <Popup>{attendance?.store?.storeName}</Popup>
           </Marker>
         </MapContainer>
       </Paper>
@@ -329,7 +329,7 @@ export default function DetailAttendanceView() {
           size="large"
           fullWidth
         >
-          Check In
+          {attendance?.scheduleStatus === "checkin" ? "Check Out" : "Check In"}
         </Button>
       </Stack>
 

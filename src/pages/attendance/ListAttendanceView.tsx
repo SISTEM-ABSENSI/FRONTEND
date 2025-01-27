@@ -210,6 +210,7 @@ export default function ListAttendanceView() {
                       navigate(`/attendances/detail/${attendance.scheduleId}`, {
                         state: {
                           store: attendance.store,
+                          attendance: attendance,
                         },
                       });
                     }
