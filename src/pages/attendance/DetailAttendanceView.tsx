@@ -49,6 +49,7 @@ export default function DetailAttendanceView() {
   const { id } = useParams();
   const location = useLocation();
   const attendance = location.state.attendance as IState;
+
   const { handleUpdateRequest } = useHttp();
   const { setAppAlert } = useAppContext();
   const [isLoading, setIsLoading] = useState(false);
@@ -202,6 +203,29 @@ export default function DetailAttendanceView() {
       return;
     }
 
+    const currentTime = new Date();
+    const startDate = new Date(attendance.scheduleStartDate);
+    const endDate = new Date(attendance.scheduleEndDate);
+
+    // Check if trying to check in before start date
+    if (currentTime < startDate) {
+      setAppAlert({
+        isDisplayAlert: true,
+        message: `Cannot check in before scheduled start time (${startDate.toLocaleString()})`,
+        alertType: "error",
+      });
+      return;
+    }
+
+    // Check if user is late (after end date)
+    if (currentTime > endDate) {
+      setAppAlert({
+        isDisplayAlert: true,
+        message: `You are late. Scheduled end time was ${endDate.toLocaleString()}`,
+        alertType: "warning",
+      });
+    }
+
     try {
       setIsLoading(true);
       await handleUpdateRequest({
@@ -213,15 +237,19 @@ export default function DetailAttendanceView() {
       });
       setAppAlert({
         isDisplayAlert: true,
-        message: "Successfully checked in",
+        message: `Successfully ${
+          attendance?.scheduleStatus === "checkin"
+            ? "checked out"
+            : "checked in"
+        }`,
         alertType: "success",
       });
       window.history.back();
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       setAppAlert({
         isDisplayAlert: true,
-        message: "Failed to check in",
+        message: error?.response?.data?.message || "Failed to check in",
         alertType: "error",
       });
     } finally {

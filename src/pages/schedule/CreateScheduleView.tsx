@@ -172,7 +172,7 @@ export default function CreateScheduleView() {
         <CircularProgress color="primary" />
       </Backdrop>
 
-      <Box sx={{ p: 2 }}>
+      <Box>
         <Card>
           <CardContent>
             <Stack spacing={3}>
