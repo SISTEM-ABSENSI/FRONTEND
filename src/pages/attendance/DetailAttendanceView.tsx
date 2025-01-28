@@ -13,7 +13,7 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useHttp } from "../../hooks/http";
 import { useAppContext } from "../../context/app.context";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
@@ -22,6 +22,7 @@ import L from "leaflet";
 import { IStoreModel } from "../../models/storeModel";
 import { PhotoCamera as PhotoCameraIcon } from "@mui/icons-material";
 import { IAttendanceModel } from "../../models/attendanceModel";
+import { handleUploadImageToFirebase } from "../../utilities/uploadImageToFirebase";
 
 // Fix the Leaflet marker icon paths
 const defaultIcon = L.icon({
@@ -146,23 +147,48 @@ export default function DetailAttendanceView() {
     setShowCamera(false);
   };
 
-  const capturePhoto = () => {
+  const capturePhoto = async () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       const context = canvas.getContext("2d");
 
-      // Set canvas size to match video
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-
-      // Draw video frame to canvas
       context?.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // Convert to base64
-      const photoData = canvas.toDataURL("image/jpeg");
-      setPhoto(photoData);
-      stopCamera();
+      // Convert canvas to blob
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          try {
+            // Create a File object from the blob
+            const imageFile = new File(
+              [blob],
+              `attendance-photo-${Date.now()}.jpg`,
+              {
+                type: "image/jpeg",
+              }
+            );
+
+            // Upload to Firebase and get URL
+            await handleUploadImageToFirebase({
+              selectedFile: imageFile,
+              getImageUrl: (imageUrl: string) => {
+                setPhoto(imageUrl);
+              },
+            });
+
+            stopCamera();
+          } catch (error) {
+            console.error("Error uploading image:", error);
+            setAppAlert({
+              isDisplayAlert: true,
+              message: "Failed to upload image",
+              alertType: "error",
+            });
+          }
+        }
+      }, "image/jpeg");
     }
   };
 
