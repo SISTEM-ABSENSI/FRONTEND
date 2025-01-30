@@ -120,6 +120,7 @@ export default function CreateScheduleView() {
 
   const handleDateTimeChange = (type: "start" | "end", value: string) => {
     const [date, time] = value.split("T");
+    console.log(value)
     if (type === "start") {
       setSchedule({
         ...schedule,

@@ -23,6 +23,7 @@ import { IStoreModel } from "../../models/storeModel";
 import { PhotoCamera as PhotoCameraIcon } from "@mui/icons-material";
 import { IAttendanceModel } from "../../models/attendanceModel";
 import { handleUploadImageToFirebase } from "../../utilities/uploadImageToFirebase";
+import moment from "moment";
 
 // Fix the Leaflet marker icon paths
 const defaultIcon = L.icon({
@@ -193,6 +194,10 @@ export default function DetailAttendanceView() {
     }
   };
 
+  const startDate = new Date(attendance.scheduleStartDate);
+  const endDate = new Date(attendance.scheduleEndDate);
+  console.log(startDate, endDate);
+
   const handleCheckIn = async () => {
     if (!photo) {
       setAppAlert({
@@ -203,26 +208,62 @@ export default function DetailAttendanceView() {
       return;
     }
 
-    const currentTime = new Date();
-    const startDate = new Date(attendance.scheduleStartDate);
-    const endDate = new Date(attendance.scheduleEndDate);
+    const currentTime = moment();
+    const startDate = moment(attendance.scheduleStartDate);
+    const endDate = moment(attendance.scheduleEndDate);
+
+    // Format times for display
+    const formattedStartTime = startDate.format("DD MMM YYYY, HH:mm");
+    const formattedEndTime = endDate.format("DD MMM YYYY, HH:mm");
+    const formattedCurrentTime = currentTime.format("DD MMM YYYY, HH:mm");
 
     // Check if trying to check in before start date
-    if (currentTime < startDate) {
+    if (currentTime.isBefore(startDate)) {
+      const timeUntilStart = moment.duration(startDate.diff(currentTime));
+      const hoursUntilStart = Math.floor(timeUntilStart.asHours());
+      const minutesUntilStart = timeUntilStart.minutes();
+
       setAppAlert({
         isDisplayAlert: true,
-        message: `Cannot check in before scheduled start time (${startDate.toLocaleString()})`,
+        message: `Cannot check in yet. Schedule starts in ${hoursUntilStart}h ${minutesUntilStart}m (${formattedStartTime})`,
         alertType: "error",
       });
       return;
     }
 
     // Check if user is late (after end date)
-    if (currentTime > endDate) {
+    if (currentTime.isAfter(endDate)) {
+      const timeSinceEnd = moment.duration(currentTime.diff(endDate));
+      const hoursLate = Math.floor(timeSinceEnd.asHours());
+      const minutesLate = timeSinceEnd.minutes();
+
+      const confirmLate = window.confirm(
+        `You are ${hoursLate}h ${minutesLate}m late. Schedule ended at ${formattedEndTime}. Do you want to continue?`
+      );
+
+      if (!confirmLate) {
+        return;
+      }
+
       setAppAlert({
         isDisplayAlert: true,
-        message: `You are late. Scheduled end time was ${endDate.toLocaleString()}`,
+        message: `Late attendance recorded. You are ${hoursLate}h ${minutesLate}m late.`,
         alertType: "warning",
+      });
+    }
+
+    // Check if within grace period (e.g., 15 minutes early is acceptable)
+    const gracePeriodMinutes = 15;
+    if (
+      currentTime.isBefore(startDate) &&
+      currentTime.isAfter(
+        startDate.clone().subtract(gracePeriodMinutes, "minutes")
+      )
+    ) {
+      setAppAlert({
+        isDisplayAlert: true,
+        message: "Early check-in within grace period accepted",
+        alertType: "info",
       });
     }
 
@@ -233,6 +274,7 @@ export default function DetailAttendanceView() {
         body: {
           attendanceId: id,
           attendancePhoto: photo,
+          attendanceTime: currentTime.format("YYYY-MM-DD HH:mm:ss"),
         },
       });
       setAppAlert({
@@ -241,15 +283,15 @@ export default function DetailAttendanceView() {
           attendance?.scheduleStatus === "checkin"
             ? "checked out"
             : "checked in"
-        }`,
+        } at ${formattedCurrentTime}`,
         alertType: "success",
       });
       window.history.back();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
       setAppAlert({
         isDisplayAlert: true,
-        message: error?.response?.data?.message || "Failed to check in",
+        message: "Failed to check in",
         alertType: "error",
       });
     } finally {

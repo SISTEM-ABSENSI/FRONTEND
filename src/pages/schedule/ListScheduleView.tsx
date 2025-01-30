@@ -40,6 +40,7 @@ import { useHttp } from "../../hooks/http";
 import { green, orange, blue, grey, red } from "@mui/material/colors";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../../context/app.context";
+import { convertTime } from "../../utilities/convertTime";
 
 interface ISchedule {
   scheduleId: number;
@@ -304,13 +305,8 @@ export default function ListScheduleView() {
                           {schedule.store.storeName}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          {new Date(
-                            schedule.scheduleStartDate
-                          ).toLocaleDateString()}{" "}
-                          -{" "}
-                          {new Date(
-                            schedule.scheduleEndDate
-                          ).toLocaleDateString()}
+                          {convertTime(schedule.scheduleStartDate)} -{" "}
+                          {convertTime(schedule.scheduleEndDate)}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           {schedule.store.storeAddress}
