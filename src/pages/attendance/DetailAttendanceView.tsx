@@ -57,7 +57,7 @@ export default function DetailAttendanceView() {
     null
   );
   const [withinRange, setWithinRange] = useState(false);
-  const MAX_DISTANCE = 5000; // meters
+  const MAX_DISTANCE = 50000000; // meters
   const [photo, setPhoto] = useState<string | null>(null);
   const [showCamera, setShowCamera] = useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement>(null);
