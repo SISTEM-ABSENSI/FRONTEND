@@ -24,6 +24,7 @@ import { PhotoCamera as PhotoCameraIcon } from "@mui/icons-material";
 import { IAttendanceModel } from "../../models/attendanceModel";
 import { handleUploadImageToFirebase } from "../../utilities/uploadImageToFirebase";
 import moment from "moment";
+import { convertTime } from "../../utilities/convertTime";
 
 // Fix the Leaflet marker icon paths
 const defaultIcon = L.icon({
@@ -194,10 +195,6 @@ export default function DetailAttendanceView() {
     }
   };
 
-  const startDate = new Date(attendance.scheduleStartDate);
-  const endDate = new Date(attendance.scheduleEndDate);
-  console.log(startDate, endDate);
-
   const handleCheckIn = async () => {
     if (!photo) {
       setAppAlert({
@@ -208,14 +205,25 @@ export default function DetailAttendanceView() {
       return;
     }
 
-    const currentTime = moment();
-    const startDate = moment(attendance.scheduleStartDate);
-    const endDate = moment(attendance.scheduleEndDate);
+    // Parse dates in UTC
+    const currentTime = moment().utc();
+    const startDate = moment.utc(attendance.scheduleStartDate);
+    const endDate = moment.utc(attendance.scheduleEndDate);
 
-    // Format times for display
-    const formattedStartTime = startDate.format("DD MMM YYYY, HH:mm");
-    const formattedEndTime = endDate.format("DD MMM YYYY, HH:mm");
-    const formattedCurrentTime = currentTime.format("DD MMM YYYY, HH:mm");
+    console.log("Time Debug:", {
+      raw_start: attendance.scheduleStartDate,
+      raw_end: attendance.scheduleEndDate,
+      current: currentTime.format("YYYY-MM-DD HH:mm:ss"),
+      start: startDate.format("YYYY-MM-DD HH:mm:ss"),
+      end: endDate.format("YYYY-MM-DD HH:mm:ss"),
+      isBefore: currentTime.isBefore(startDate),
+      isAfter: currentTime.isAfter(endDate),
+    });
+
+    // Format times for display - convert back to local time for display
+    const formattedStartTime = startDate.local().format("YYYY-MM-DD HH:mm");
+    const formattedEndTime = endDate.local().format("YYYY-MM-DD HH:mm");
+    const formattedCurrentTime = currentTime.local().format("YYYY-MM-DD HH:mm");
 
     // Check if trying to check in before start date
     if (currentTime.isBefore(startDate)) {
@@ -252,21 +260,6 @@ export default function DetailAttendanceView() {
       });
     }
 
-    // Check if within grace period (e.g., 15 minutes early is acceptable)
-    const gracePeriodMinutes = 15;
-    if (
-      currentTime.isBefore(startDate) &&
-      currentTime.isAfter(
-        startDate.clone().subtract(gracePeriodMinutes, "minutes")
-      )
-    ) {
-      setAppAlert({
-        isDisplayAlert: true,
-        message: "Early check-in within grace period accepted",
-        alertType: "info",
-      });
-    }
-
     try {
       setIsLoading(true);
       await handleUpdateRequest({
@@ -274,7 +267,7 @@ export default function DetailAttendanceView() {
         body: {
           attendanceId: id,
           attendancePhoto: photo,
-          attendanceTime: currentTime.format("YYYY-MM-DD HH:mm:ss"),
+          attendanceTime: currentTime.utc().format("YYYY-MM-DD HH:mm:ss"),
         },
       });
       setAppAlert({
@@ -345,6 +338,13 @@ export default function DetailAttendanceView() {
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Address: {attendance?.store?.storeAddress}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Start: {convertTime(attendance?.scheduleStartDate)}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Schedule: {convertTime(attendance?.scheduleStartDate)} -{" "}
+              {convertTime(attendance?.scheduleEndDate)}
             </Typography>
           </Stack>
         </CardContent>
