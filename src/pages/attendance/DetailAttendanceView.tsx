@@ -205,8 +205,7 @@ export default function DetailAttendanceView() {
       return;
     }
 
-    // Parse dates in UTC
-    const currentTime = moment().utc();
+    const currentTime = moment.utc().add(7, "hours");
     const startDate = moment.utc(attendance.scheduleStartDate);
     const endDate = moment.utc(attendance.scheduleEndDate);
 
@@ -220,12 +219,6 @@ export default function DetailAttendanceView() {
       isAfter: currentTime.isAfter(endDate),
     });
 
-    // Format times for display - convert back to local time for display
-    const formattedStartTime = startDate.local().format("YYYY-MM-DD HH:mm");
-    const formattedEndTime = endDate.local().format("YYYY-MM-DD HH:mm");
-    const formattedCurrentTime = currentTime.local().format("YYYY-MM-DD HH:mm");
-
-    // Check if trying to check in before start date
     if (currentTime.isBefore(startDate)) {
       const timeUntilStart = moment.duration(startDate.diff(currentTime));
       const hoursUntilStart = Math.floor(timeUntilStart.asHours());
@@ -233,7 +226,9 @@ export default function DetailAttendanceView() {
 
       setAppAlert({
         isDisplayAlert: true,
-        message: `Cannot check in yet. Schedule starts in ${hoursUntilStart}h ${minutesUntilStart}m (${formattedStartTime})`,
+        message: `Cannot check in yet. Schedule starts in ${hoursUntilStart}h ${minutesUntilStart}m (${startDate.format(
+          "YYYY-MM-DD HH:mm:ss"
+        )})`,
         alertType: "error",
       });
       return;
@@ -246,7 +241,9 @@ export default function DetailAttendanceView() {
       const minutesLate = timeSinceEnd.minutes();
 
       const confirmLate = window.confirm(
-        `You are ${hoursLate}h ${minutesLate}m late. Schedule ended at ${formattedEndTime}. Do you want to continue?`
+        `You are ${hoursLate}h ${minutesLate}m late. Schedule ended at ${endDate.format(
+          "YYYY-MM-DD HH:mm:ss"
+        )}. Do you want to continue?`
       );
 
       if (!confirmLate) {
@@ -276,7 +273,7 @@ export default function DetailAttendanceView() {
           attendance?.scheduleStatus === "checkin"
             ? "checked out"
             : "checked in"
-        } at ${formattedCurrentTime}`,
+        } at ${currentTime.utc().format("YYYY-MM-DD HH:mm:ss")}`,
         alertType: "success",
       });
       window.history.back();
@@ -343,7 +340,7 @@ export default function DetailAttendanceView() {
               Start: {convertTime(attendance?.scheduleStartDate)}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Schedule: {convertTime(attendance?.scheduleStartDate)} -{" "}
+              End:
               {convertTime(attendance?.scheduleEndDate)}
             </Typography>
           </Stack>
