@@ -205,7 +205,7 @@ export default function DetailAttendanceView() {
       return;
     }
 
-    const currentTime = moment.utc().add(7, "hours");
+    const currentTime = moment.utc();
     const startDate = moment.utc(attendance.scheduleStartDate);
     const endDate = moment.utc(attendance.scheduleEndDate);
 
