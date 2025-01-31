@@ -114,6 +114,11 @@ export default function CreateScheduleView() {
       isValid = false;
     }
 
+    if (moment(schedule.scheduleEndDate).isBefore(moment())) {
+      newErrors.scheduleEndDate = "End date must be in the future";
+      isValid = false;
+    }
+
     setErrors(newErrors);
     return isValid;
   };
