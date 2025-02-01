@@ -205,9 +205,9 @@ export default function DetailAttendanceView() {
       return;
     }
 
-    const currentTime = moment.utc();
-    const startDate = moment.utc(attendance.scheduleStartDate);
-    const endDate = moment.utc(attendance.scheduleEndDate);
+    const currentTime = moment();
+    const startDate = moment(attendance.scheduleStartDate);
+    const endDate = moment(attendance.scheduleEndDate);
 
     console.log("Time Debug:", {
       raw_start: attendance.scheduleStartDate,
@@ -264,7 +264,7 @@ export default function DetailAttendanceView() {
         body: {
           attendanceId: id,
           attendancePhoto: photo,
-          attendanceTime: currentTime.utc().format("YYYY-MM-DD HH:mm:ss"),
+          attendanceTime: currentTime.format("YYYY-MM-DD HH:mm:ss"),
         },
       });
       setAppAlert({
@@ -273,7 +273,7 @@ export default function DetailAttendanceView() {
           attendance?.scheduleStatus === "checkin"
             ? "checked out"
             : "checked in"
-        } at ${currentTime.utc().format("YYYY-MM-DD HH:mm:ss")}`,
+        } at ${currentTime.format("YYYY-MM-DD HH:mm:ss")}`,
         alertType: "success",
       });
       window.history.back();
