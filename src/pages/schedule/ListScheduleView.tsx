@@ -40,7 +40,11 @@ import { useHttp } from "../../hooks/http";
 import { green, orange, blue, grey, red } from "@mui/material/colors";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../../context/app.context";
-import { convertTime } from "../../utilities/convertTime";
+import {
+  convertTime,
+  convertUTCToLocal,
+  formatISOToString,
+} from "../../utilities/convertTime";
 
 interface ISchedule {
   scheduleId: number;
