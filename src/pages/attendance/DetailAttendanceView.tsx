@@ -207,7 +207,7 @@ export default function DetailAttendanceView() {
 
     const currentTime = moment();
     const startDate = moment(attendance.scheduleStartDate);
-    const endDate = moment(attendance.scheduleEndDate);
+    // const endDate = moment(attendance.scheduleEndDate);
 
     // Check if attendance is being done on the same day
     if (!currentTime.isSame(startDate, "day")) {
