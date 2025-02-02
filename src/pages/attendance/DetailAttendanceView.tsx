@@ -219,29 +219,51 @@ export default function DetailAttendanceView() {
       isAfter: currentTime.isAfter(endDate),
     });
 
-    if (currentTime.isBefore(startDate)) {
-      const timeUntilStart = moment.duration(startDate.diff(currentTime));
-      const hoursUntilStart = Math.floor(timeUntilStart.asHours());
-      const minutesUntilStart = timeUntilStart.minutes();
+    // if (currentTime.isBefore(startDate)) {
+    //   const timeUntilStart = moment.duration(startDate.diff(currentTime));
+    //   const hoursUntilStart = Math.floor(timeUntilStart.asHours());
+    //   const minutesUntilStart = timeUntilStart.minutes();
 
-      setAppAlert({
-        isDisplayAlert: true,
-        message: `Cannot check in yet. Schedule starts in ${hoursUntilStart}h ${minutesUntilStart}m (${startDate.format(
-          "YYYY-MM-DD HH:mm:ss"
-        )})`,
-        alertType: "error",
-      });
-      return;
-    }
+    //   setAppAlert({
+    //     isDisplayAlert: true,
+    //     message: `Cannot check in yet. Schedule starts in ${hoursUntilStart}h ${minutesUntilStart}m (${startDate.format(
+    //       "YYYY-MM-DD HH:mm:ss"
+    //     )})`,
+    //     alertType: "error",
+    //   });
+    //   return;
+    // }
 
-    // Check if user is late (after end date)
-    if (currentTime.isAfter(endDate)) {
-      const timeSinceEnd = moment.duration(currentTime.diff(endDate));
+    // // Check if user is late (after end date)
+    // if (currentTime.isAfter(endDate)) {
+    //   const timeSinceEnd = moment.duration(currentTime.diff(endDate));
+    //   const hoursLate = Math.floor(timeSinceEnd.asHours());
+    //   const minutesLate = timeSinceEnd.minutes();
+
+    //   const confirmLate = window.confirm(
+    //     `You are ${hoursLate}h ${minutesLate}m late. Schedule ended at ${endDate.format(
+    //       "YYYY-MM-DD HH:mm:ss"
+    //     )}. Do you want to continue?`
+    //   );
+
+    //   if (!confirmLate) {
+    //     return;
+    //   }
+
+    //   setAppAlert({
+    //     isDisplayAlert: true,
+    //     message: `Late attendance recorded. You are ${hoursLate}h ${minutesLate}m late.`,
+    //     alertType: "warning",
+    //   });
+    // }
+
+    if (currentTime.isAfter(startDate)) {
+      const timeSinceEnd = moment.duration(currentTime.diff(startDate));
       const hoursLate = Math.floor(timeSinceEnd.asHours());
       const minutesLate = timeSinceEnd.minutes();
 
       const confirmLate = window.confirm(
-        `You are ${hoursLate}h ${minutesLate}m late. Schedule ended at ${endDate.format(
+        `You are ${hoursLate}h ${minutesLate}m late. Schedule started at ${startDate.format(
           "YYYY-MM-DD HH:mm:ss"
         )}. Do you want to continue?`
       );
