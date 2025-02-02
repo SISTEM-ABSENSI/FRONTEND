@@ -210,37 +210,42 @@ export default function DetailAttendanceView() {
     // const endDate = moment(attendance.scheduleEndDate);
 
     // Check if attendance is being done on the same day
-    if (!currentTime.isSame(startDate, "day")) {
-      setAppAlert({
-        isDisplayAlert: true,
-        message: `Cannot record attendance. Schedule is for ${startDate.format(
-          "YYYY-MM-DD"
-        )} but current date is ${currentTime.format("YYYY-MM-DD")}`,
-        alertType: "error",
-      });
-      return;
-    }
 
-    if (currentTime.isAfter(startDate)) {
-      const timeSinceEnd = moment.duration(currentTime.diff(startDate));
-      const hoursLate = Math.floor(timeSinceEnd.asHours());
-      const minutesLate = timeSinceEnd.minutes();
-
-      const confirmLate = window.confirm(
-        `You are ${hoursLate}h ${minutesLate}m late. Schedule started at ${startDate.format(
-          "YYYY-MM-DD HH:mm:ss"
-        )}. Do you want to continue?`
-      );
-
-      if (!confirmLate) {
+    if (attendance?.scheduleStatus === "waiting") {
+      if (!currentTime.isSame(startDate, "day")) {
+        setAppAlert({
+          isDisplayAlert: true,
+          message: `Cannot record attendance. Schedule is for ${startDate.format(
+            "YYYY-MM-DD"
+          )} but current date is ${currentTime.format("YYYY-MM-DD")}`,
+          alertType: "error",
+        });
         return;
       }
+    }
 
-      setAppAlert({
-        isDisplayAlert: true,
-        message: `Late attendance recorded. You are ${hoursLate}h ${minutesLate}m late.`,
-        alertType: "warning",
-      });
+    if (attendance?.scheduleStatus === "waiting") {
+      if (currentTime.isAfter(startDate)) {
+        const timeSinceEnd = moment.duration(currentTime.diff(startDate));
+        const hoursLate = Math.floor(timeSinceEnd.asHours());
+        const minutesLate = timeSinceEnd.minutes();
+
+        const confirmLate = window.confirm(
+          `You are ${hoursLate}h ${minutesLate}m late. Schedule started at ${startDate.format(
+            "YYYY-MM-DD HH:mm:ss"
+          )}. Do you want to continue?`
+        );
+
+        if (!confirmLate) {
+          return;
+        }
+
+        setAppAlert({
+          isDisplayAlert: true,
+          message: `Late attendance recorded. You are ${hoursLate}h ${minutesLate}m late.`,
+          alertType: "warning",
+        });
+      }
     }
 
     try {
