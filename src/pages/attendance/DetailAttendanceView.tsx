@@ -209,53 +209,17 @@ export default function DetailAttendanceView() {
     const startDate = moment(attendance.scheduleStartDate);
     const endDate = moment(attendance.scheduleEndDate);
 
-    console.log("Time Debug:", {
-      raw_start: attendance.scheduleStartDate,
-      raw_end: attendance.scheduleEndDate,
-      current: currentTime.format("YYYY-MM-DD HH:mm:ss"),
-      start: startDate.format("YYYY-MM-DD HH:mm:ss"),
-      end: endDate.format("YYYY-MM-DD HH:mm:ss"),
-      isBefore: currentTime.isBefore(startDate),
-      isAfter: currentTime.isAfter(endDate),
-    });
-
-    // if (currentTime.isBefore(startDate)) {
-    //   const timeUntilStart = moment.duration(startDate.diff(currentTime));
-    //   const hoursUntilStart = Math.floor(timeUntilStart.asHours());
-    //   const minutesUntilStart = timeUntilStart.minutes();
-
-    //   setAppAlert({
-    //     isDisplayAlert: true,
-    //     message: `Cannot check in yet. Schedule starts in ${hoursUntilStart}h ${minutesUntilStart}m (${startDate.format(
-    //       "YYYY-MM-DD HH:mm:ss"
-    //     )})`,
-    //     alertType: "error",
-    //   });
-    //   return;
-    // }
-
-    // // Check if user is late (after end date)
-    // if (currentTime.isAfter(endDate)) {
-    //   const timeSinceEnd = moment.duration(currentTime.diff(endDate));
-    //   const hoursLate = Math.floor(timeSinceEnd.asHours());
-    //   const minutesLate = timeSinceEnd.minutes();
-
-    //   const confirmLate = window.confirm(
-    //     `You are ${hoursLate}h ${minutesLate}m late. Schedule ended at ${endDate.format(
-    //       "YYYY-MM-DD HH:mm:ss"
-    //     )}. Do you want to continue?`
-    //   );
-
-    //   if (!confirmLate) {
-    //     return;
-    //   }
-
-    //   setAppAlert({
-    //     isDisplayAlert: true,
-    //     message: `Late attendance recorded. You are ${hoursLate}h ${minutesLate}m late.`,
-    //     alertType: "warning",
-    //   });
-    // }
+    // Check if attendance is being done on the same day
+    if (!currentTime.isSame(startDate, "day")) {
+      setAppAlert({
+        isDisplayAlert: true,
+        message: `Cannot record attendance. Schedule is for ${startDate.format(
+          "YYYY-MM-DD"
+        )} but current date is ${currentTime.format("YYYY-MM-DD")}`,
+        alertType: "error",
+      });
+      return;
+    }
 
     if (currentTime.isAfter(startDate)) {
       const timeSinceEnd = moment.duration(currentTime.diff(startDate));
