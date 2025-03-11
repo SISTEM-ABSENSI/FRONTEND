@@ -125,7 +125,6 @@ export default function CreateScheduleView() {
 
   const handleDateTimeChange = (type: "start" | "end", value: string) => {
     const [date, time] = value.split("T");
-    console.log(value);
     if (type === "start") {
       setSchedule({
         ...schedule,
@@ -198,10 +197,10 @@ export default function CreateScheduleView() {
                   />
 
                   <FormControl error={!!errors.scheduleStoreId}>
-                    <InputLabel>Clinic</InputLabel>
+                    <InputLabel>Stores</InputLabel>
                     <Select
                       value={schedule.scheduleStoreId || ""}
-                      label="Clinic"
+                      label="Stores"
                       onChange={(e) =>
                         setSchedule({
                           ...schedule,

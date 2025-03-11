@@ -62,7 +62,7 @@ export default function EditScheduleView() {
       const result = await handleGetRequest({
         path: `/schedules/detail/${id}`,
       });
-      console.log(result);
+
       if (result) {
         setSchedule({
           scheduleName: result.scheduleName,
@@ -227,10 +227,10 @@ export default function EditScheduleView() {
                 />
 
                 <FormControl error={!!errors.scheduleStoreId}>
-                  <InputLabel>Clinic</InputLabel>
+                  <InputLabel>Stores</InputLabel>
                   <Select
                     value={schedule.scheduleStoreId || ""}
-                    label="Clinic"
+                    label="Stores"
                     onChange={(e) =>
                       setSchedule({
                         ...schedule,

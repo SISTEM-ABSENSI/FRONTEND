@@ -80,7 +80,7 @@ export default function ListScheduleView() {
           scheduleStatus: status === "all" ? "all" : status,
         },
       });
-      console.log(result);
+
       if (result && Array.isArray(result?.items)) {
         setSchedules(result.items);
       }
@@ -191,7 +191,7 @@ export default function ListScheduleView() {
                 variant="outlined"
                 onClick={() => navigate("/schedules/create")}
               >
-                Add Schedule
+                Create Schedule
               </Button>
             </Stack>
             <TextField

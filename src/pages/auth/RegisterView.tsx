@@ -145,7 +145,7 @@ export default function RegisterView() {
           <form onSubmit={handleSubmit} style={{ width: "100%" }}>
             <Stack spacing={3}>
               <TextField
-                label="Full Name"
+                label="User Name"
                 fullWidth
                 value={formData.userName}
                 onChange={(e) =>

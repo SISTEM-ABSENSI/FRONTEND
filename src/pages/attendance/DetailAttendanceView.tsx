@@ -336,7 +336,7 @@ export default function DetailAttendanceView() {
           </Typography>
           <Stack spacing={1}>
             <Typography variant="subtitle1">
-              Clinic: {attendance?.store?.storeName}
+              Store: {attendance?.store?.storeName}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Address: {attendance?.store?.storeAddress}
