@@ -83,7 +83,7 @@ export default function HistoryAttendanceView() {
             <TextField
               fullWidth
               size="small"
-              placeholder="Search store or schedule..."
+              placeholder="Search clinic or schedule..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               InputProps={{

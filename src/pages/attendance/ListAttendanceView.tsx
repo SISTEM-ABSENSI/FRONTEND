@@ -30,11 +30,13 @@ import {
 } from "@mui/icons-material";
 import { useHttp } from "../../hooks/http";
 import { green, orange, blue, grey } from "@mui/material/colors";
+import { convertTime } from "../../utilities/convertTime";
 
 interface IAttendance {
   scheduleId: number;
   scheduleName: string;
   scheduleEndDate: string;
+  scheduleStartDate: string;
   scheduleStatus: string;
   store: {
     storeName: string;
@@ -204,19 +206,30 @@ export default function ListAttendanceView() {
             attendances.map((attendance, index) => (
               <Box key={attendance.scheduleId}>
                 <ListItem
-                  onClick={() =>
-                    navigate(`/attendances/detail/${attendance.scheduleId}`, {
-                      state: {
-                        store: attendance.store,
-                      },
-                    })
-                  }
+                  disabled={attendance.scheduleStatus === "checkout"}
+                  onClick={() => {
+                    if (attendance.scheduleStatus !== "checkout") {
+                      navigate(`/attendances/detail/${attendance.scheduleId}`, {
+                        state: {
+                          store: attendance.store,
+                          attendance: attendance,
+                        },
+                      });
+                    }
+                  }}
                   sx={{
                     py: 2,
                     "&:hover": {
-                      bgcolor: grey[50],
+                      bgcolor:
+                        attendance.scheduleStatus === "checkout"
+                          ? "inherit"
+                          : grey[50],
                     },
-                    cursor: "pointer",
+                    cursor:
+                      attendance.scheduleStatus === "checkout"
+                        ? "default"
+                        : "pointer",
+                    opacity: attendance.scheduleStatus === "checkout" ? 0.5 : 1,
                   }}
                 >
                   <ListItemIcon>
@@ -236,9 +249,12 @@ export default function ListAttendanceView() {
                           {attendance.scheduleName}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          {new Date(
-                            attendance.scheduleEndDate
-                          ).toLocaleString()}
+                          Start:
+                          {convertTime(attendance.scheduleStartDate)}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          End:
+                          {convertTime(attendance.scheduleEndDate)}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           {attendance.store.storeAddress}

@@ -114,6 +114,11 @@ export default function CreateScheduleView() {
       isValid = false;
     }
 
+    if (moment(schedule.scheduleEndDate).isBefore(moment())) {
+      newErrors.scheduleEndDate = "End date must be in the future";
+      isValid = false;
+    }
+
     setErrors(newErrors);
     return isValid;
   };
@@ -172,7 +177,7 @@ export default function CreateScheduleView() {
         <CircularProgress color="primary" />
       </Backdrop>
 
-      <Box sx={{ p: 2 }}>
+      <Box>
         <Card>
           <CardContent>
             <Stack spacing={3}>
@@ -192,10 +197,10 @@ export default function CreateScheduleView() {
                   />
 
                   <FormControl error={!!errors.scheduleStoreId}>
-                    <InputLabel>Store</InputLabel>
+                    <InputLabel>Stores</InputLabel>
                     <Select
                       value={schedule.scheduleStoreId || ""}
-                      label="Store"
+                      label="Stores"
                       onChange={(e) =>
                         setSchedule({
                           ...schedule,

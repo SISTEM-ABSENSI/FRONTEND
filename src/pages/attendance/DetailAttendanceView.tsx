@@ -13,7 +13,7 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useHttp } from "../../hooks/http";
 import { useAppContext } from "../../context/app.context";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
@@ -21,20 +21,14 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { IStoreModel } from "../../models/storeModel";
 import { PhotoCamera as PhotoCameraIcon } from "@mui/icons-material";
+import { IAttendanceModel } from "../../models/attendanceModel";
+import { handleUploadImageToFirebase } from "../../utilities/uploadImageToFirebase";
+import moment from "moment";
+import { convertTime } from "../../utilities/convertTime";
 
 // Fix the Leaflet marker icon paths
 const defaultIcon = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
-
-const storeIcon = L.icon({
-  iconUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x-blue.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -49,12 +43,15 @@ interface ILocation {
   longitude: number;
 }
 
+interface IState extends IAttendanceModel {
+  store: IStoreModel;
+}
+
 export default function DetailAttendanceView() {
   const { id } = useParams();
-
-  const navigate = useNavigate();
   const location = useLocation();
-  const store = location.state.store as IStoreModel;
+  const attendance = location.state.attendance as IState;
+
   const { handleUpdateRequest } = useHttp();
   const { setAppAlert } = useAppContext();
   const [isLoading, setIsLoading] = useState(false);
@@ -62,11 +59,12 @@ export default function DetailAttendanceView() {
     null
   );
   const [withinRange, setWithinRange] = useState(false);
-  const MAX_DISTANCE = 50; // meters
+  const MAX_DISTANCE = 50000000; // meters
   const [photo, setPhoto] = useState<string | null>(null);
-  const [showCamera, setShowCamera] = useState(false);
+  const [showCamera, setShowCamera] = useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
 
   const calculateDistance = (
     lat1: number,
@@ -96,12 +94,12 @@ export default function DetailAttendanceView() {
           const { latitude, longitude } = position.coords;
           setCurrentLocation({ latitude, longitude });
 
-          if (store) {
+          if (attendance?.store) {
             const distance = calculateDistance(
               latitude,
               longitude,
-              Number(store.storeLatitude),
-              Number(store.storeLongitude)
+              Number(attendance?.store?.storeLatitude),
+              Number(attendance?.store?.storeLongitude)
             );
             setWithinRange(distance <= MAX_DISTANCE);
           }
@@ -132,53 +130,54 @@ export default function DetailAttendanceView() {
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" },
+        video: true,
       });
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        setShowCamera(true);
       }
     } catch (error) {
-      console.error(error);
-      setAppAlert({
-        isDisplayAlert: true,
-        message: "Failed to access camera. Please allow camera access.",
-        alertType: "error",
-      });
-    }
-  };
-
-  const stopCamera = () => {
-    if (videoRef.current?.srcObject) {
-      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-      tracks.forEach((track) => track.stop());
+      console.error("Error accessing camera:", error);
       setShowCamera(false);
     }
   };
 
-  const capturePhoto = () => {
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+      tracks.forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
+    }
+    setShowCamera(false);
+  };
+
+  const capturePhoto = async () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       const context = canvas.getContext("2d");
 
-      // Set canvas size to match video
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-
-      // Draw video frame to canvas
       context?.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // Convert to base64
-      const photoData = canvas.toDataURL("image/jpeg");
-      setPhoto(photoData);
+      // Convert canvas to blob
+      canvas.toBlob((blob) => {
+        if (blob) {
+          // Store the blob temporarily instead of uploading
+          const imageUrl = URL.createObjectURL(blob);
+          setPhoto(imageUrl);
+          // Store the blob for later upload
+          setPhotoBlob(blob);
+        }
+      }, "image/jpeg");
+
       stopCamera();
     }
   };
 
   const handleCheckIn = async () => {
-    if (!photo) {
+    if (!photo || !photoBlob) {
       setAppAlert({
         isDisplayAlert: true,
         message: "Please take a photo first",
@@ -187,22 +186,103 @@ export default function DetailAttendanceView() {
       return;
     }
 
+    const currentTime = moment();
+    const startDate = moment(attendance.scheduleStartDate);
+    // const endDate = moment(attendance.scheduleEndDate);
+
+    // Check if attendance is being done on the same day
+
+    if (attendance?.scheduleStatus === "waiting") {
+      if (!currentTime.isSame(startDate, "day")) {
+        setAppAlert({
+          isDisplayAlert: true,
+          message: `Cannot record attendance. Schedule is for ${startDate.format(
+            "YYYY-MM-DD"
+          )} but current date is ${currentTime.format("YYYY-MM-DD")}`,
+          alertType: "error",
+        });
+        return;
+      }
+    }
+
+    if (attendance?.scheduleStatus === "waiting") {
+      if (currentTime.isAfter(startDate)) {
+        const timeSinceEnd = moment.duration(currentTime.diff(startDate));
+        const hoursLate = Math.floor(timeSinceEnd.asHours());
+        const minutesLate = timeSinceEnd.minutes();
+
+        const confirmLate = window.confirm(
+          `You are ${hoursLate}h ${minutesLate}m late. Schedule started at ${startDate.format(
+            "YYYY-MM-DD HH:mm:ss"
+          )}. Do you want to continue?`
+        );
+
+        if (!confirmLate) {
+          return;
+        }
+
+        setAppAlert({
+          isDisplayAlert: true,
+          message: `Late attendance recorded. You are ${hoursLate}h ${minutesLate}m late.`,
+          alertType: "warning",
+        });
+      }
+    }
+
     try {
       setIsLoading(true);
+
+      // Create a File object from the blob
+      const imageFile = new File(
+        [photoBlob],
+        `attendance-photo-${Date.now()}.jpg`,
+        {
+          type: "image/jpeg",
+        }
+      );
+
+      // Upload to Firebase and get URL
+      let uploadedImageUrl = "";
+
+      // Wait for the image upload to complete and URL to be returned
+      await new Promise((resolve, reject) => {
+        handleUploadImageToFirebase({
+          selectedFile: imageFile,
+          getImageUrl: (imageUrl: string) => {
+            uploadedImageUrl = imageUrl;
+            resolve(imageUrl);
+          },
+        }).catch(reject);
+      });
+
+      // Verify we have the image URL before proceeding
+      if (!uploadedImageUrl) {
+        alert("Failed to upload image");
+        throw new Error("Failed to upload image");
+      }
+
+      const payload = {
+        attendanceId: id,
+        attendancePhoto: uploadedImageUrl,
+        attendanceTime: currentTime.format("YYYY-MM-DD HH:mm:ss"),
+      };
+
       await handleUpdateRequest({
         path: "/attendances",
-        body: {
-          attendanceId: id,
-          attendancePhoto: photo,
-        },
+        body: payload,
       });
+
       setAppAlert({
         isDisplayAlert: true,
-        message: "Successfully checked in",
+        message: `Successfully ${
+          attendance?.scheduleStatus === "checkin"
+            ? "checked out"
+            : "checked in"
+        } at ${currentTime.format("YYYY-MM-DD HH:mm:ss")}`,
         alertType: "success",
       });
-      navigate("/attendance");
-    } catch (error) {
+      window.history.back();
+    } catch (error: unknown) {
       console.error(error);
       setAppAlert({
         isDisplayAlert: true,
@@ -214,8 +294,13 @@ export default function DetailAttendanceView() {
     }
   };
 
+  const openCamera = () => {
+    setShowCamera(true);
+    startCamera();
+  };
+
   useEffect(() => {
-    if (store) {
+    if (attendance?.store) {
       getLocation();
       const interval = setInterval(getLocation, 10000); // Update every 10 seconds
       return () => clearInterval(interval);
@@ -229,7 +314,7 @@ export default function DetailAttendanceView() {
     };
   }, []);
 
-  if (!currentLocation || !store) {
+  if (!currentLocation || !attendance?.store) {
     return (
       <Box
         display="flex"
@@ -251,10 +336,17 @@ export default function DetailAttendanceView() {
           </Typography>
           <Stack spacing={1}>
             <Typography variant="subtitle1">
-              Store: {store.storeName}
+              Store: {attendance?.store?.storeName}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Address: {store.storeAddress}
+              Address: {attendance?.store?.storeAddress}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Start: {convertTime(attendance?.scheduleStartDate)}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              End:
+              {convertTime(attendance?.scheduleEndDate)}
             </Typography>
           </Stack>
         </CardContent>
@@ -287,12 +379,12 @@ export default function DetailAttendanceView() {
           </Marker>
           <Marker
             position={[
-              Number(store.storeLatitude),
-              Number(store.storeLongitude),
+              Number(attendance?.store?.storeLatitude),
+              Number(attendance?.store?.storeLongitude),
             ]}
             icon={defaultIcon}
           >
-            <Popup>{store.storeName}</Popup>
+            <Popup>{attendance?.store?.storeName}</Popup>
           </Marker>
         </MapContainer>
       </Paper>
@@ -300,19 +392,32 @@ export default function DetailAttendanceView() {
       <Stack spacing={2}>
         {!withinRange && (
           <Alert severity="error">
-            You must be within 50 meters of the store location to check in
+            You must be within 50 meters of the Clinic location to check in
           </Alert>
+        )}
+
+        {photo && (
+          <Box
+            component="img"
+            src={photo}
+            alt="Verification photo"
+            sx={{
+              width: "100%",
+              height: "auto",
+              borderRadius: 1,
+            }}
+          />
         )}
 
         <Button
           variant="outlined"
           color="primary"
           startIcon={<PhotoCameraIcon />}
-          onClick={startCamera}
+          onClick={openCamera}
           disabled={!withinRange || isLoading}
           fullWidth
         >
-          Take Photo
+          Open Camera
         </Button>
 
         <Button
@@ -322,7 +427,7 @@ export default function DetailAttendanceView() {
           size="large"
           fullWidth
         >
-          Check In
+          {attendance?.scheduleStatus === "checkin" ? "Check Out" : "Check In"}
         </Button>
       </Stack>
 
@@ -350,42 +455,6 @@ export default function DetailAttendanceView() {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Photo Preview Dialog */}
-      {photo && (
-        <Dialog
-          open={!!photo && !showCamera}
-          onClose={() => setPhoto(null)}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogContent>
-            <Box
-              component="img"
-              src={photo}
-              alt="Verification photo"
-              sx={{
-                width: "100%",
-                height: "auto",
-                borderRadius: 1,
-              }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => {
-                setPhoto(null);
-                startCamera();
-              }}
-            >
-              Retake
-            </Button>
-            <Button onClick={() => setPhoto(null)} variant="contained">
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
     </Box>
   );
 }

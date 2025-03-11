@@ -57,7 +57,7 @@ const getProtectedRouters = (role: string) => {
       element: <EditScheduleView />,
     },
   ];
-  console.log(role);
+
   mainRouters.push(...routes);
 
   return mainRouters;
