@@ -26,11 +26,13 @@ import { useHttp } from "../../hooks/http";
 import { blue, green, orange } from "@mui/material/colors";
 import { useNavigate } from "react-router-dom";
 import { IUserModel } from "../../models/userModel";
+import { convertTime } from "../../utilities/convertTime";
 
 interface IScheduleModel {
   scheduleId: number;
   scheduleName: string;
   scheduleEndDate: string;
+  scheduleStartDate: string;
   scheduleStatus: string;
   store: {
     storeName: string;
@@ -190,10 +192,8 @@ export default function HomeView() {
                     <AccessTimeIcon />
                   </ListItemIcon>
                   <ListItemText
-                    primary={schedule.store.storeName}
-                    secondary={`${schedule.scheduleName} - ${new Date(
-                      schedule.scheduleEndDate
-                    ).toLocaleDateString()}`}
+                    primary={schedule.scheduleName}
+                    secondary={`End - ${convertTime(schedule.scheduleEndDate)}`}
                   />
                   <Typography
                     variant="caption"

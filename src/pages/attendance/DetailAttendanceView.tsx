@@ -13,7 +13,7 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useHttp } from "../../hooks/http";
 import { useAppContext } from "../../context/app.context";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
@@ -22,6 +22,9 @@ import L from "leaflet";
 import { IStoreModel } from "../../models/storeModel";
 import { PhotoCamera as PhotoCameraIcon } from "@mui/icons-material";
 import { IAttendanceModel } from "../../models/attendanceModel";
+import { handleUploadImageToFirebase } from "../../utilities/uploadImageToFirebase";
+import moment from "moment";
+import { convertTime } from "../../utilities/convertTime";
 
 // Fix the Leaflet marker icon paths
 const defaultIcon = L.icon({
@@ -48,6 +51,7 @@ export default function DetailAttendanceView() {
   const { id } = useParams();
   const location = useLocation();
   const attendance = location.state.attendance as IState;
+
   const { handleUpdateRequest } = useHttp();
   const { setAppAlert } = useAppContext();
   const [isLoading, setIsLoading] = useState(false);
@@ -55,11 +59,12 @@ export default function DetailAttendanceView() {
     null
   );
   const [withinRange, setWithinRange] = useState(false);
-  const MAX_DISTANCE = 5000; // meters
+  const MAX_DISTANCE = 50000000; // meters
   const [photo, setPhoto] = useState<string | null>(null);
   const [showCamera, setShowCamera] = useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
 
   const calculateDistance = (
     lat1: number,
@@ -146,28 +151,33 @@ export default function DetailAttendanceView() {
     setShowCamera(false);
   };
 
-  const capturePhoto = () => {
+  const capturePhoto = async () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       const context = canvas.getContext("2d");
 
-      // Set canvas size to match video
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-
-      // Draw video frame to canvas
       context?.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // Convert to base64
-      const photoData = canvas.toDataURL("image/jpeg");
-      setPhoto(photoData);
+      // Convert canvas to blob
+      canvas.toBlob((blob) => {
+        if (blob) {
+          // Store the blob temporarily instead of uploading
+          const imageUrl = URL.createObjectURL(blob);
+          setPhoto(imageUrl);
+          // Store the blob for later upload
+          setPhotoBlob(blob);
+        }
+      }, "image/jpeg");
+
       stopCamera();
     }
   };
 
   const handleCheckIn = async () => {
-    if (!photo) {
+    if (!photo || !photoBlob) {
       setAppAlert({
         isDisplayAlert: true,
         message: "Please take a photo first",
@@ -176,22 +186,103 @@ export default function DetailAttendanceView() {
       return;
     }
 
+    const currentTime = moment();
+    const startDate = moment(attendance.scheduleStartDate);
+    // const endDate = moment(attendance.scheduleEndDate);
+
+    // Check if attendance is being done on the same day
+
+    if (attendance?.scheduleStatus === "waiting") {
+      if (!currentTime.isSame(startDate, "day")) {
+        setAppAlert({
+          isDisplayAlert: true,
+          message: `Cannot record attendance. Schedule is for ${startDate.format(
+            "YYYY-MM-DD"
+          )} but current date is ${currentTime.format("YYYY-MM-DD")}`,
+          alertType: "error",
+        });
+        return;
+      }
+    }
+
+    if (attendance?.scheduleStatus === "waiting") {
+      if (currentTime.isAfter(startDate)) {
+        const timeSinceEnd = moment.duration(currentTime.diff(startDate));
+        const hoursLate = Math.floor(timeSinceEnd.asHours());
+        const minutesLate = timeSinceEnd.minutes();
+
+        const confirmLate = window.confirm(
+          `You are ${hoursLate}h ${minutesLate}m late. Schedule started at ${startDate.format(
+            "YYYY-MM-DD HH:mm:ss"
+          )}. Do you want to continue?`
+        );
+
+        if (!confirmLate) {
+          return;
+        }
+
+        setAppAlert({
+          isDisplayAlert: true,
+          message: `Late attendance recorded. You are ${hoursLate}h ${minutesLate}m late.`,
+          alertType: "warning",
+        });
+      }
+    }
+
     try {
       setIsLoading(true);
+
+      // Create a File object from the blob
+      const imageFile = new File(
+        [photoBlob],
+        `attendance-photo-${Date.now()}.jpg`,
+        {
+          type: "image/jpeg",
+        }
+      );
+
+      // Upload to Firebase and get URL
+      let uploadedImageUrl = "";
+
+      // Wait for the image upload to complete and URL to be returned
+      await new Promise((resolve, reject) => {
+        handleUploadImageToFirebase({
+          selectedFile: imageFile,
+          getImageUrl: (imageUrl: string) => {
+            uploadedImageUrl = imageUrl;
+            resolve(imageUrl);
+          },
+        }).catch(reject);
+      });
+
+      // Verify we have the image URL before proceeding
+      if (!uploadedImageUrl) {
+        alert("Failed to upload image");
+        throw new Error("Failed to upload image");
+      }
+
+      const payload = {
+        attendanceId: id,
+        attendancePhoto: uploadedImageUrl,
+        attendanceTime: currentTime.format("YYYY-MM-DD HH:mm:ss"),
+      };
+
       await handleUpdateRequest({
         path: "/attendances",
-        body: {
-          attendanceId: id,
-          attendancePhoto: photo,
-        },
+        body: payload,
       });
+
       setAppAlert({
         isDisplayAlert: true,
-        message: "Successfully checked in",
+        message: `Successfully ${
+          attendance?.scheduleStatus === "checkin"
+            ? "checked out"
+            : "checked in"
+        } at ${currentTime.format("YYYY-MM-DD HH:mm:ss")}`,
         alertType: "success",
       });
       window.history.back();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(error);
       setAppAlert({
         isDisplayAlert: true,
@@ -250,6 +341,13 @@ export default function DetailAttendanceView() {
             <Typography variant="body2" color="text.secondary">
               Address: {attendance?.store?.storeAddress}
             </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Start: {convertTime(attendance?.scheduleStartDate)}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              End:
+              {convertTime(attendance?.scheduleEndDate)}
+            </Typography>
           </Stack>
         </CardContent>
       </Card>
@@ -294,7 +392,7 @@ export default function DetailAttendanceView() {
       <Stack spacing={2}>
         {!withinRange && (
           <Alert severity="error">
-            You must be within 50 meters of the store location to check in
+            You must be within 50 meters of the Clinic location to check in
           </Alert>
         )}
 
